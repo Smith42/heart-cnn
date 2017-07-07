@@ -55,3 +55,16 @@
 * I wrote a scaling function hat eliminates most of the whitespace. After training the CNN did not learn significantly.
 * Added a ROC AUC calculator to the outputs.
 * I'm going to try artificially expanding the data.
+
+## 2017-07-07
+* Because of the overfitting going on when running the CNN, I increased the L2 regularisers' weight decay from 0.001 to 0.01, and added an extra dropout layer between the two FC dense layers.
+* Can't seem to get any results with a spec/sens over 60%, probably due to the way I'm orgainising the data.
+
+* The CNN appears to train better when using non-scaled data. I can't figure out why. Maybe it's using the image sizes as an aid?
+    - Conv filter: [2,15,15]; pool filter: [2,2,2]; 2 FC 1024 neurons, L2 regulisation at weight decay = 0.001, dropout at 0.5 after each FC layer; ADAM optimiser, learning rate = 0.0001, categorical x-entropy loss; batch size = 10 at 38 datum; k = 3 folds. 
+        - non-scaled: <img src="./figures/rocCurves/2017-07-07_11:34:00-2dsliceCNN.png" alt="ROC curve from normalised 2D slice CNN 2017-07-05" style="width: 200px;"/> 
+        - scaled: <img src="./figures/rocCurves/2017-07-07_11:50:00-2dsliceCNN.png" alt="ROC curve from normalised 2D slice CNN 2017-07-05" style="width: 200px;"/> 
+        - scaled, not renormalised: <img src="./figures/rocCurves/2017-07-07_13:41:00-2dsliceCNN.png" alt="ROC curve from normalised 2D slice CNN 2017-07-05" style="width: 200px;"/>
+* As shown in the ROC curves, the only data that is causing consistent learning is the non-scaled one. I don't know why.
+
+* Rewrote heart_data.ipynb so that it can resize the input data.
