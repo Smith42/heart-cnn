@@ -68,3 +68,16 @@
 * As shown in the ROC curves, the only data that is causing consistent learning is the non-scaled one. I don't know why.
 
 * Rewrote heart_data.ipynb so that it can resize the input data.
+
+## 2017-07-10
+* It might be better to use a pseudo-Siamese CNN instead of a 4D CNN to compare two 3D images, as training will be faster.
+    - I have written CNNs using two-channel, and Siamese architectures, along with the OG 3D convolution architecture. The two-channel and Siamese architectures are described here: [](https://arxiv.org/pdf/1504.03641.pdf).
+* The use of a very deep NN architecture would reduce linearity, and may be useful.
+
+* Artificially expanding the data seems to have worked. I am getting after k = 3 folds (100 epochs) at 619 datum (two runs):
+    - Spec: 0.864, 0.917
+    - Sens: 0.888, 0.883
+    - ROC AUC: 0.918, 0.940
+    - This is with the two-channel architecture. ROC curves:
+        - <img src="./figures/rocCurves/2017-07-10_13:16:00-2dsliceCNN.png" alt="ROC curve from expanded data two-channel CNN 2017-07-10" style="width: 200px;"/>
+        - <img src="./figures/rocCurves/2017-07-10_13:49:00-2dsliceCNN.png" alt="ROC curve from expanded data two-channel CNN 2017-07-10 second repeat" style="width: 200px;"/>
