@@ -70,7 +70,7 @@
 * Rewrote heart_data.ipynb so that it can resize the input data.
 
 ## 2017-07-10
-* It might be better to use a pseudo-Siamese CNN instead of a 4D CNN to compare two 3D images, as training will be faster.
+* It might be better to use a Siamese CNN instead of a 4D CNN to compare two 3D images, as training will be faster.
     - I have written CNNs using two-channel, and Siamese architectures, along with the OG 3D convolution architecture. The two-channel and Siamese architectures are described here: [](https://arxiv.org/pdf/1504.03641.pdf).
 * The use of a very deep NN architecture would reduce linearity, and may be useful.
 
@@ -81,3 +81,6 @@
     - This is with the two-channel architecture. ROC curves:
         - <img src="./figures/rocCurves/2017-07-10_13:16:00-2dsliceCNN.png" alt="ROC curve from expanded data two-channel CNN 2017-07-10" style="width: 200px;"/>
         - <img src="./figures/rocCurves/2017-07-10_13:49:00-2dsliceCNN.png" alt="ROC curve from expanded data two-channel CNN 2017-07-10 second repeat" style="width: 200px;"/>
+
+* Haven't got any significant results from the Siamese CNN, but have only trained it to ~30 epochs. It will probably need more training than the two-channel as there are nearly twice as many weights in the Siamese CNN.
+* I should try validating the CNN on ppts that it hasn't seen before (like take 10 ppts from the pool before artificial expansion and use these to validate).
