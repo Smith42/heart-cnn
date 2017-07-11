@@ -1,11 +1,6 @@
 #!/usr/bin/python
 
 from __future__ import print_function
-
-import sys # add some stuff to PYTHONPATH so it can find the modules:
-sys.path.append("/soft/python/lib/python2.7/site-packages")
-sys.path.append("/soft/python/lib64/python2.7/site-packages")
-
 import numpy as np
 import dicom
 import matplotlib.pyplot as plt
@@ -213,7 +208,7 @@ if __name__ == "__main__":
         net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.00001, loss='categorical_crossentropy')
 
         model = tflearn.DNN(net, tensorboard_verbose=0)
-        model.fit([X0,X1], dummyLabels, batch_size=10, n_epoch=1, show_metric=True)
+        model.fit([X0,X1], dummyLabels, batch_size=10, n_epoch=100, show_metric=True)
 
         # Get sensitivity and specificity
         illTest = []
