@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+
 import sys # add some stuff to PYTHONPATH so it can find the modules:
 sys.path.append("/soft/python/lib/python2.7/site-packages")
 sys.path.append("/soft/python/lib64/python2.7/site-packages")
 
-from __future__ import print_function
 import numpy as np
 import dicom
 import matplotlib.pyplot as plt
