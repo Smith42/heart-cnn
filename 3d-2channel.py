@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
         # Second layer:
         net = tflearn.layers.conv.conv_3d(net, 32, [5,5,5],  activation="leaky_relu")
-        net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2])
+        net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
 
         # Fully connected layers
         net = tflearn.layers.core.fully_connected(net, 2048, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
