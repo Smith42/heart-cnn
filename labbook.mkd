@@ -103,3 +103,5 @@
 * I have increased the number of conv layers to 4.
     - No change.
 * Running the 3D CNN on the hub. It looks like it takes ~20 epochs to train to 100% (I should use validation to see if/when it starts overfitting). It also takes ~12s to train an epoch. To contast it takes my computer ~16mins per epoch, an 80x speedup.
+
+* Added 4(!) new convolution layers to 3D CNN. Since this reduces linearity, we may find something.
