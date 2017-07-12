@@ -163,6 +163,7 @@ if __name__ == "__main__":
     # Take out first ten ppts for testing
     testData = shufData[:10]
     testLab = shufLab[:10]
+    print(testLab) # Print testLab so I can see the healthy/ill ratio
     shufData = shufData[10:]
     shufLab = shufLab[10:]
 
@@ -229,7 +230,7 @@ if __name__ == "__main__":
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
-    model.fit(shufData, shufLabOH, batch_size=128, n_epoch=20, show_metric=True)
+    model.fit(shufData, shufLabOH, batch_size=128, n_epoch=100, show_metric=True)
 
     # Get sensitivity and specificity
     illTest = []
