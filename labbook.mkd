@@ -84,3 +84,21 @@
 
 * Haven't got any significant results from the Siamese CNN, but have only trained it to ~30 epochs. It will probably need more training than the two-channel as there are nearly twice as many weights in the Siamese CNN.
 * I should try validating the CNN on ppts that it hasn't seen before (like take 10 ppts from the pool before artificial expansion and use these to validate).
+
+## 2017-07-11
+* I have separated ppts into different k-folds before expansion, so each k-fold has unique ppts in it now, even after artificial expansion. We'll see how it performs now... (This is in the 2channel ipynb)
+    - It doesn't work very well. Getting ~50% accuracy.
+         - <img src="./figures/rocCurves/2017-07-11_14:20:00-2dsliceCNN.png" alt="ROC curve from exp data 2-channel (different ppts in each k-fold) CNN 2017-07-11" style="width:200px;"/>
+* More data would be helpful to reduce overfitting, but using all three dimensions of the heart data may be enough to get "good enough" results.
+
+* I have written a 2 channel CNN for the 3D data. It should be ready to try on the supercomputer.
+
+## 2017-07-12
+* Testing the 2dSiameseCNN on the supercomputer: 
+    ``$ qsub -q gpu -l nodes=1:ppn=16 -I -X -l walltime=24:00:00``
+    It doesn't seem to work. How long is the queue?
+* I have found a bug in the 2dsliceCNN that may be causing the lack of learning. The expansion doesn't relabel the expanded data correctly. I have hopefully fixed this.
+* Running for 20 epochs @ k = 5 folds to see how it does.
+    - Again, ~50% accuracy.
+* I have increased the number of conv layers to 4.
+    - No change.
