@@ -189,12 +189,24 @@ if __name__ == "__main__":
         net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
         # First layer:
-        net = tflearn.layers.conv.conv_3d(net, 16, [5,5,5],  activation="leaky_relu")
+        net = tflearn.layers.conv.conv_3d(net, 32, [3,3,3],  activation="leaky_relu")
         net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
 
         # Second layer:
-        net = tflearn.layers.conv.conv_3d(net, 32, [5,5,5],  activation="leaky_relu")
+        net = tflearn.layers.conv.conv_3d(net, 64, [3,3,3],  activation="leaky_relu")
         net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
+
+        # Third layer
+        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
+
+        # Fourth layer
+        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
+
+        # Fifth layer
+        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
+
+        # Sixth layer
+        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
 
         # Fully connected layers
         net = tflearn.layers.core.fully_connected(net, 2048, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
