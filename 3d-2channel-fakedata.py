@@ -108,12 +108,12 @@ def cropHeart(inp):
 if __name__ == "__main__":
 
     # Do data import
-    abDir = "./data/rlst"
-    abDat = importDir(abDir)
+    abName = "ischaemia"
+    abDat = importType(abName,500)
     abDat = np.moveaxis(abDat,1,-1)
 
-    normDir = "./data/nlst"
-    normDat = importDir(normDir) # Normal and abnormal data same number of ppts
+    normName = "healthy"
+    normDat = importType(normName,500) # Normal and abnormal data same number of ppts
     normDat = np.moveaxis(normDat,1,-1)
 
     inData = np.concatenate([normDat, abDat])
