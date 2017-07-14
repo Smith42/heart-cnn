@@ -169,13 +169,13 @@ if __name__ == "__main__":
         # Output layer:
         net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
+        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.001, loss='categorical_crossentropy')
         model = tflearn.DNN(net, tensorboard_verbose=0)
 
         # Train the model, leaving out the kfold not being used
         dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-        model.fit(dummyData, dummyLabels, batch_size=10, n_epoch=20, show_metric=True)
+        model.fit(dummyData, dummyLabels, batch_size=10, n_epoch=100, show_metric=True)
 
         # Get sensitivity and specificity
         illTest = []
