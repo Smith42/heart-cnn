@@ -11,8 +11,6 @@ from sklearn.metrics import roc_curve, roc_auc_score
 import scipy
 import datetime
 
-# Random shuffle state:
-RS = 2
 
 # Import and preprocess data
 
@@ -142,6 +140,9 @@ def expandData(arr):
     return expArr, mul
 
 if __name__ == "__main__":
+    # Random shuffle state:
+    RS = np.random.randint(0,100)
+    print("Random integer:". RS)
 
     # Do data import
     abDir = "./data/rlst"
@@ -233,7 +234,7 @@ if __name__ == "__main__":
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
-    model.fit(shufData, shufLabOH, batch_size=128, n_epoch=100, show_metric=True)
+    model.fit(shufData, shufLabOH, batch_size=128, n_epoch=50, show_metric=True)
 
     # Get sensitivity and specificity
     illTest = []
