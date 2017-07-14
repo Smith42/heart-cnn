@@ -110,4 +110,9 @@
 
 ## 2017-07-14
 * Added overall average performance metric to 3dCNN-nokfold.
-* I think I have found the problem. The random state shuffle is set to 1. If I change it, it may get some more believable results.
+* I think I have found the cause of the low ROC/accuracy. The random state shuffle is set to 1. If I change it, it may get some more believable results.
+* Looks like that was what the issue was. The CNN got lucky with the cubes taken out for testing:
+    - <img src="./figures/rocCurves/2017-07-14_10:18:00-3dCNN-nok.png" alt="ROC curve from 2-channel 3D CNN 2017-07-14" style="width:200px;"/>
+    - <img src="./figures/rocCurves/2017-07-14_10:48:00-3dCNN-nok.png" alt="ROC curve from 2-channel 3D CNN 2017-07-14" style="width:200px;"/>
+
+
