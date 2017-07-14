@@ -105,3 +105,9 @@
 * Running the 3D CNN on the hub. It looks like it takes ~20 epochs to train to 100% (I should use validation to see if/when it starts overfitting). It also takes ~12s to train an epoch. To contast it takes my computer ~16mins per epoch, an 80x speedup.
 
 * Added 4(!) new convolution layers to 3D CNN. Since this reduces linearity, we may find something.
+    - Getting some odd results. The CNN comes out with the opposite of what I was expecting (low ROC, accuracy).
+    - Look at labelling, try on simpler data (MNIST 0s and 1s?), reintroduce k-folding? 
+
+## 2017-07-14
+* Added overall average performance metric to 3dCNN-nokfold.
+* I think I have found the problem. The random state shuffle is set to 1. If I change it, it may get some more believable results.

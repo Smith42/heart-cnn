@@ -11,6 +11,9 @@ from sklearn.metrics import roc_curve, roc_auc_score
 import scipy
 import datetime
 
+# Random shuffle state:
+RS = 2
+
 # Import and preprocess data
 
 def importHeartData(calmFile, stressFile, resize):
@@ -157,7 +160,7 @@ if __name__ == "__main__":
     labels = np.concatenate([normLab, abLab])
 
     # Mutual shuffle
-    shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
+    shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=RS)
     shufData = np.reshape(shufData,(-1,34,34,34,2))
 
     # Take out first ten ppts for testing
@@ -171,13 +174,13 @@ if __name__ == "__main__":
     shufData, mul = expandData(shufData)
     shufLab = np.tile(shufLab, mul) # Expand labels by expansion amount
 
-    shufData, shufLab = sklearn.utils.shuffle(shufData, shufLab, random_state=1)
+    shufData, shufLab = sklearn.utils.shuffle(shufData, shufLab, random_state=RS)
     shufLabOH = np.eye(2)[shufLab.astype(int)] # One hot encode
 
     testData, mul = expandData(testData)
     testLab = np.tile(testLab, mul) # Expand labels by expansion amount
 
-    testData, testLab = sklearn.utils.shuffle(testData, testLab, random_state=1)
+    testData, testLab = sklearn.utils.shuffle(testData, testLab, random_state=RS)
     testLabOH = np.eye(2)[testLab.astype(int)] # One hot encode
 
     # Neural net (two-channel)
@@ -245,6 +248,7 @@ if __name__ == "__main__":
     illLabel = np.tile([0,1], (len(illTest), 1))
     sens = model.evaluate(np.array(healthTest), healthLabel)
     spec = model.evaluate(np.array(illTest), illLabel)
+    avg = model.evaluate(np.array(testData), testLabOH)
 
     # Get roc curve data
     predicted = np.array(model.predict(np.array(testData)))
@@ -272,6 +276,6 @@ if __name__ == "__main__":
     plt.savefig("./figures/rocCurves/"+dt+"-3dCNN-nok.png")
 
     log = open("./logs/"+dt+"-3dCNN-nok.log","w+")
-    strOut = str("Specificity: "+str(spec)+"\nSensitivity: "+str(sens)+"\nROC AUC: "+str(auc))
+    strOut = str("Specificity: "+str(spec)+"\nSensitivity: "+str(sens)+"\nAverage:"+str(avg)+"\nROC AUC: "+str(auc))
     log.write(strOut)
     log.close()
