@@ -115,4 +115,5 @@
     - <img src="./figures/rocCurves/2017-07-14_10:18:00-3dCNN-nok.png" alt="ROC curve from 2-channel 3D CNN 2017-07-14" style="width:200px;"/>
     - <img src="./figures/rocCurves/2017-07-14_10:48:00-3dCNN-nok.png" alt="ROC curve from 2-channel 3D CNN 2017-07-14" style="width:200px;"/>
 
+* Using fake data to train a CNN. It's found on ``/data/jim/Heart/sims``.
 

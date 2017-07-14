@@ -175,7 +175,7 @@ if __name__ == "__main__":
         # Train the model, leaving out the kfold not being used
         dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-        model.fit(dummyData, dummyLabels, batch_size=10, n_epoch=100, show_metric=True)
+        model.fit(dummyData, dummyLabels, batch_size=64, n_epoch=100, show_metric=True)
 
         # Get sensitivity and specificity
         illTest = []
