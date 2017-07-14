@@ -142,7 +142,7 @@ def expandData(arr):
 if __name__ == "__main__":
     # Random shuffle state:
     RS = np.random.randint(0,100)
-    print("Random integer:". RS)
+    print("Random integer:", RS)
 
     # Do data import
     abDir = "./data/rlst"
