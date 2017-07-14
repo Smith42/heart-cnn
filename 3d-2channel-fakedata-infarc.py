@@ -151,7 +151,7 @@ if __name__ == "__main__":
         model = tflearn.DNN(net, tensorboard_verbose=0)
 
         # Train the model, leaving out the kfold not being used
-        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
+        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,1])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
         model.fit(dummyData, dummyLabels, batch_size=64, n_epoch=100, show_metric=True)
 
