@@ -63,12 +63,10 @@ def importHeartData(calmFile, stressFile, resize):
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
         zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
 
-    for i in np.arange(zeroArr0.shape[0]):
-        zeroArr0[i] = sklearn.preprocessing.normalize(zeroArr0[i])
-        zeroArr1[i] = sklearn.preprocessing.normalize(zeroArr1[i])
+    zeroArr0 = normalise(zeroArr0)
+    zeroArr1 = normalise(zeroArr1)
 
-    #catOut = [zeroArr0, zeroArr1]
-    catOut = np.dot(zeroArr0, zeroArr1) # Encode images together
+    catOut = [zeroArr0, zeroArr1]
     return catOut
 
 def importType(pptType, n):
@@ -106,6 +104,15 @@ def cropHeart(inp):
           top_left[2]:bottom_right[2]+1]
     return out
 
+def normalise(inData):
+    """
+    Normalise 3D array.
+    """
+    inDataAbs = np.fabs(inData)
+    inDataMax = np.amax(inData)
+    normalisedData = inDataAbs/inDataMax
+    return normalisedData
+
 if __name__ == "__main__":
 
     # Do data import
@@ -126,7 +133,7 @@ if __name__ == "__main__":
 
     # Mutual shuffle
     shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
-    shufData = np.reshape(shufData,(-1,34,34,34,1))
+    shufData = np.reshape(shufData,(-1,34,34,34,2))
     shufLabOH = np.eye(2)[shufLab.astype(int)] # One hot encode
 
     # k fold the data
@@ -147,7 +154,7 @@ if __name__ == "__main__":
         tflearn.initializations.normal()
 
         # Input layer:
-        net = tflearn.layers.core.input_data(shape=[None,34,34,34,1])
+        net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
         # First layer:
         net = tflearn.layers.conv.conv_3d(net, 32, [10,10,10],  activation="leaky_relu")
@@ -174,7 +181,7 @@ if __name__ == "__main__":
         model = tflearn.DNN(net, tensorboard_verbose=0)
 
         # Train the model, leaving out the kfold not being used
-        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,1])
+        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
         model.fit(dummyData, dummyLabels, batch_size=64, n_epoch=100, show_metric=True)
 
