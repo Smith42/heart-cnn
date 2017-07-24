@@ -53,11 +53,13 @@ def importHeartData(calmFile, resize):
 
 def importType(pptType, n):
     """
-    Get stress and calm scans for n patients with pptType illness.
+    Get stress scans for n patients with pptType illness.
+    Since these are infarction scans, you can see the difference between healthy
+    and ill patients without comparing stressed and calm heart cubes.
     Return joined array.
     """
     tmplst = []
-    simsDir = "/data/jim/Heart/sims/"
+    simsDir = "/data/jim/Heart/sims/" # This is the dir on the cluster
     for i in np.arange(0,n):
         cwdCalm = str(simsDir+"rest_"+pptType+"_%0.4d.fits") %i
         # Get zoomed 3d arrays:

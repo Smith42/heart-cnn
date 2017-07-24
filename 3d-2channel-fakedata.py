@@ -67,7 +67,8 @@ def importHeartData(calmFile, stressFile, resize):
         zeroArr0[i] = sklearn.preprocessing.normalize(zeroArr0[i])
         zeroArr1[i] = sklearn.preprocessing.normalize(zeroArr1[i])
 
-    catOut = [zeroArr0, zeroArr1]
+    #catOut = [zeroArr0, zeroArr1]
+    catOut = np.dot(zeroArr0, zeroArr1) # Encode images together
     return catOut
 
 def importType(pptType, n):
@@ -125,7 +126,7 @@ if __name__ == "__main__":
 
     # Mutual shuffle
     shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
-    shufData = np.reshape(shufData,(-1,34,34,34,2))
+    shufData = np.reshape(shufData,(-1,34,34,34,1))
     shufLabOH = np.eye(2)[shufLab.astype(int)] # One hot encode
 
     # k fold the data
@@ -146,7 +147,7 @@ if __name__ == "__main__":
         tflearn.initializations.normal()
 
         # Input layer:
-        net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
+        net = tflearn.layers.core.input_data(shape=[None,34,34,34,1])
 
         # First layer:
         net = tflearn.layers.conv.conv_3d(net, 32, [10,10,10],  activation="leaky_relu")
@@ -169,11 +170,11 @@ if __name__ == "__main__":
         # Output layer:
         net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.000001, loss='categorical_crossentropy')
+        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.001, loss='categorical_crossentropy')
         model = tflearn.DNN(net, tensorboard_verbose=0)
 
         # Train the model, leaving out the kfold not being used
-        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
+        dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,1])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
         model.fit(dummyData, dummyLabels, batch_size=64, n_epoch=100, show_metric=True)
 

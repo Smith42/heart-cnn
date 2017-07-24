@@ -116,4 +116,5 @@
     - <img src="./figures/rocCurves/2017-07-14_10:48:00-3dCNN-nok.png" alt="ROC curve from 2-channel 3D CNN 2017-07-14" style="width:200px;"/>
 
 * Using fake data to train a CNN. It's found on ``/data/jim/Heart/sims``.
+* The CNNs aren't training. For normal/infarction data I have the loss decreasing but the accuracy is static. [](https://www.reddit.com/r/cs231n/comments/4p12oc/what_does_it_mean_when_the_loss_is_decreasing/) < It looks like it is due to the CNN training well on "easy" examples.
 
