@@ -17,8 +17,8 @@ if __name__ == "__main__":
     i = int(sys.argv[1]) # i is current kfold
     k = 3 # k folds
 
-    inData = np.load("./3D-2ch-fakedata/data/kfoldData.npy")
-    inLabels = np.load("./3D-2ch-fakedata/data/kfoldLabels.npy")
+    inData = np.load("./3D-2ch-fakedata/data/inData.npy")
+    inLabels = np.load("./3D-2ch-fakedata/data/inLabels.npy")
     inLabelsOH = np.eye(2)[inLabels.astype(int)] # One hot encode
 
     # k fold the data
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     kfoldLabelsOH = np.array_split(inLabelsOH, k)
 
     try:
-        spec, sens, roc = np.load("./3D-2ch-fakedata/mess.npy")
+        spec, sens, auc, tpr, fpr = np.load("./3D-2ch-fakedata/mess.npy")
     except IOError: # FileNotFoundError in python3
         print("./mess.npy not found. It will be created at the end of this pass")
         pass
@@ -42,11 +42,19 @@ if __name__ == "__main__":
     except NameError:
         sens = []
     try:
-        roc
+        auc
     except NameError:
-        roc = []
+        auc = []
+    try:
+        tpr
+    except NameError:
+        tpr = []
+    try:
+        fpr
+    except NameError:
+        fpr = []
 
-        # Neural net (two-channel)
+    # Neural net (two-channel)
 
     sess = tf.InteractiveSession()
     tf.reset_default_graph()
@@ -95,13 +103,15 @@ if __name__ == "__main__":
 
     healthLabel = np.tile([1,0], (len(healthTest), 1))
     illLabel = np.tile([0,1], (len(illTest), 1))
-    sens.append(model.evaluate(np.array(healthTest), healthLabel))
-    spec.append(model.evaluate(np.array(illTest), illLabel))
+    sens = np.append(sens, model.evaluate(np.array(healthTest), healthLabel))
+    spec = np.append(spec, model.evaluate(np.array(illTest), illLabel))
 
     # Get roc curve data
     predicted = np.array(model.predict(np.array(kfoldData[i])))
-    fpr, tpr, th = roc_curve(kfoldLabels[i], predicted[:,1])
-    auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
-    roc.append([fpr, tpr, auc])
+    fprs, tprs, th = roc_curve(kfoldLabels[i], predicted[:,1])
+    aucs = roc_auc_score(kfoldLabels[i], predicted[:,1])
+    auc = np.append(auc, aucs)
+    fpr = np.append(fpr, fprs)
+    tpr = np.append(tpr, tprs)
 
-    np.save("./3D-2ch-fakedata/mess", (spec, sens, roc))
+    np.save("./3D-2ch-fakedata/mess", (spec, sens, auc, [tpr], [fpr]))
