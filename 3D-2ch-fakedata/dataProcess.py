@@ -113,15 +113,7 @@ if __name__ == "__main__":
     # Mutual shuffle
     shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
     shufData = np.reshape(shufData,(-1,34,34,34,2))
-    shufLabOH = np.eye(2)[shufLab.astype(int)] # One hot encode
-
-    # k fold the data
-    k = 3
-    kfoldData = np.array_split(shufData, k)
-    kfoldLabels = np.array_split(shufLab, k)
-    kfoldLabelsOH = np.array_split(shufLabOH, k)
 
     # Save data as np object:
-    np.save("./3D-2ch-fakedata/data/kfoldData", kfoldData)
-    np.save("./3D-2ch-fakedata/data/kfoldLabels", kfoldLabels)
-    np.save("./3D-2ch-fakedata/data/kfoldLabelsOH", kfoldLabelsOH)
+    np.save("./3D-2ch-fakedata/data/inData", shufData)
+    np.save("./3D-2ch-fakedata/data/inLabels", shufLab)

@@ -17,6 +17,15 @@ if __name__ == "__main__":
     i = int(sys.argv[1]) # i is current kfold
     k = 3 # k folds
 
+    inData = np.load("./3D-2ch-fakedata/data/kfoldData.npy")
+    inLabels = np.load("./3D-2ch-fakedata/data/kfoldLabels.npy")
+    inLabelsOH = np.eye(2)[inLabels.astype(int)] # One hot encode
+
+    # k fold the data
+    kfoldData = np.array_split(inData, k)
+    kfoldLabels = np.array_split(inLabels, k)
+    kfoldLabelsOH = np.array_split(inLabelsOH, k)
+
     try:
         spec, sens, roc = np.load("./3D-2ch-fakedata/mess.npy")
     except IOError: # FileNotFoundError in python3
@@ -37,11 +46,7 @@ if __name__ == "__main__":
     except NameError:
         roc = []
 
-    kfoldData = np.load("./3D-2ch-fakedata/data/kfoldData.npy")
-    kfoldLabels = np.load("./3D-2ch-fakedata/data/kfoldLabels.npy")
-    kfoldLabelsOH = np.load("./3D-2ch-fakedata/data/kfoldLabelsOH.npy")
-
-    # Neural net (two-channel)
+        # Neural net (two-channel)
 
     sess = tf.InteractiveSession()
     tf.reset_default_graph()
