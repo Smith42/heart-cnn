@@ -36,11 +36,11 @@ def importHeartData(calmFile, stressFile, resize):
         stress3d = scipy.ndimage.interpolation.zoom(stressTmp, (stressRatio))
 
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
-        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
+        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],:stress3d.shape[2]] = stress3d
 
     else:
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
-        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
+        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],:stress3d.shape[2]] = stress3d
 
     zeroArr0 = normalise(zeroArr0)
     zeroArr1 = normalise(zeroArr1)
