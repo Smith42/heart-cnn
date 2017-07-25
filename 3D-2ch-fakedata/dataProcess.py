@@ -122,6 +122,6 @@ if __name__ == "__main__":
     kfoldLabelsOH = np.array_split(shufLabOH, k)
 
     # Save data as np object:
-    np.save("./data/kfoldData", kfoldData)
-    np.save("./data/kfoldLabels", kfoldLabels)
-    np.save("./data/kfoldLabelsOH", kfoldLabelsOH)
+    np.save("./3D-2ch-fakedata/data/kfoldData", kfoldData)
+    np.save("./3D-2ch-fakedata/data/kfoldLabels", kfoldLabels)
+    np.save("./3D-2ch-fakedata/data/kfoldLabelsOH", kfoldLabelsOH)

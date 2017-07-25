@@ -18,7 +18,7 @@ if __name__ == "__main__":
     k = 3 # k folds
 
     try:
-        spec, sens, roc = np.load("./mess.npy")
+        spec, sens, roc = np.load("./3D-2ch-fakedata/mess.npy")
     except FileNotFoundError:
         print("./mess.npy not found. It will be created at the end of this pass")
         pass
@@ -37,9 +37,9 @@ if __name__ == "__main__":
     except NameError:
         roc = []
 
-    kfoldData = np.load("./data/kfoldData.npy")
-    kfoldLabels = np.load("./data/kfoldLabels.npy")
-    kfoldLabelsOH = np.load("./data/kfoldLabelsOH.npy")
+    kfoldData = np.load("./3D-2ch-fakedata/data/kfoldData.npy")
+    kfoldLabels = np.load("./3D-2ch-fakedata/data/kfoldLabels.npy")
+    kfoldLabelsOH = np.load("./3D-2ch-fakedata/data/kfoldLabelsOH.npy")
 
     # Neural net (two-channel)
 
@@ -99,4 +99,4 @@ if __name__ == "__main__":
     auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
     roc.append([fpr, tpr, auc])
 
-    np.save("./mess", (spec, sens, roc))
+    np.save("./3D-2ch-fakedata/mess", (spec, sens, roc))

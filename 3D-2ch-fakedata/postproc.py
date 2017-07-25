@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # Postprocessing (specificity, sensitivity, roc curves)
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
 
-    spec, sens, roc = np.load("./mess.npy")
+    spec, sens, roc = np.load("./3D-2ch-fakedata/mess.npy")
 
     plt.figure(figsize=(5, 5))
 
