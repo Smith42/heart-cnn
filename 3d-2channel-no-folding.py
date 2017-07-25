@@ -64,9 +64,8 @@ def importHeartData(calmFile, stressFile, resize):
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
         zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
 
-    for i in np.arange(zeroArr0.shape[0]):
-        zeroArr0[i] = sklearn.preprocessing.normalize(zeroArr0[i])
-        zeroArr1[i] = sklearn.preprocessing.normalize(zeroArr1[i])
+    zeroArr0 = normalise(zeroArr0)
+    zeroArr1 = normalise(zeroArr1)
 
     catOut = [zeroArr0, zeroArr1]
     return catOut
@@ -138,6 +137,15 @@ def expandData(arr):
 
     mul = expArr.shape[0]/arr.shape[0]
     return expArr, mul
+
+def normalise(inData):
+    """
+    Normalise 3D data.
+    """
+    inDataAbs = np.fabs(inData)
+    inDataMax = np.amax(inData)
+    croppednorm = inDataAbs/inDataMax
+    return croppednorm
 
 if __name__ == "__main__":
     # Random shuffle state:

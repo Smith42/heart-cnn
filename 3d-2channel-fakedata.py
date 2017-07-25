@@ -1,4 +1,7 @@
 from __future__ import print_function
+import matplotlib     # These are needed to run
+matplotlib.use("Agg") # the code headless.
+
 import numpy as np
 import pyfits
 import matplotlib.pyplot as plt
@@ -31,33 +34,15 @@ def importHeartData(calmFile, stressFile, resize):
     zeroArr1 = np.zeros((34,34,34))
 
     if resize == 1:
-        # Resize the 2D slices
+        # Resize the 3D slices
         calmRatio = 34.0/np.amax(calmTmp.shape)
         stressRatio = 34.0/np.amax(stressTmp.shape)
 
         calm3d = scipy.ndimage.interpolation.zoom(calmTmp, (calmRatio))
         stress3d = scipy.ndimage.interpolation.zoom(stressTmp, (stressRatio))
 
-        if calm3d.shape[0] != 34:
-            startInd = (34 - calm3d.shape[0])/2
-            zeroArr0[startInd:calm3d.shape[0]+startInd,:calm3d.shape[1],:calm3d.shape[2]] = calm3d
-        if calm3d.shape[1] != 34:
-            startInd = (34 - calm3d.shape[1])/2
-            zeroArr0[:calm3d.shape[0],startInd:calm3d.shape[1]+startInd,:calm3d.shape[2]] = calm3d
-        if calm3d.shape[2] != 34:
-            startInd = (34 - calm3d.shape[2])/2
-            zeroArr0[:calm3d.shape[0],:calm3d.shape[1],startInd:calm3d.shape[2]+startInd] = calm3d
-
-
-        if stress3d.shape[0] != 34:
-            startInd = (34 - stress3d.shape[0])/2
-            zeroArr1[startInd:stress3d.shape[0]+startInd,:stress3d.shape[1],:stress3d.shape[2]] = stress3d
-        if stress3d.shape[1] != 34:
-            startInd = (34 - stress3d.shape[1])/2
-            zeroArr1[:stress3d.shape[0],startInd:stress3d.shape[1]+startInd,:stress3d.shape[2]] = stress3d
-        if stress3d.shape[2] != 34:
-            startInd = (34 - stress3d.shape[2])/2
-            zeroArr1[:stress3d.shape[0],:stress3d.shape[1],startInd:stress3d.shape[2]+startInd] = stress3d
+        zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
+        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
 
     else:
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
@@ -117,11 +102,11 @@ if __name__ == "__main__":
 
     # Do data import
     abName = "ischaemia"
-    abDat = importType(abName,500)
+    abDat = importType(abName,750)
     abDat = np.moveaxis(abDat,1,-1)
 
     normName = "healthy"
-    normDat = importType(normName,500) # Normal and abnormal data same number of ppts
+    normDat = importType(normName,750) # Normal and abnormal data same number of ppts
     normDat = np.moveaxis(normDat,1,-1)
 
     inData = np.concatenate([normDat, abDat])
@@ -177,13 +162,13 @@ if __name__ == "__main__":
         # Output layer:
         net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.001, loss='categorical_crossentropy')
+        net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.000001, loss='categorical_crossentropy')
         model = tflearn.DNN(net, tensorboard_verbose=0)
 
         # Train the model, leaving out the kfold not being used
         dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
         dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-        model.fit(dummyData, dummyLabels, batch_size=64, n_epoch=100, show_metric=True)
+        model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=400, show_metric=True)
 
         # Get sensitivity and specificity
         illTest = []

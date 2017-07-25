@@ -37,35 +37,16 @@ def importHeartData(calmFile, stressFile, resize):
 
         calm3d = scipy.ndimage.interpolation.zoom(calmTmp, (calmRatio))
         stress3d = scipy.ndimage.interpolation.zoom(stressTmp, (stressRatio))
-
-        if calm3d.shape[0] != 34:
-            startInd = (34 - calm3d.shape[0])/2
-            zeroArr0[startInd:calm3d.shape[0]+startInd,:calm3d.shape[1],:calm3d.shape[2]] = calm3d
-        if calm3d.shape[1] != 34:
-            startInd = (34 - calm3d.shape[1])/2
-            zeroArr0[:calm3d.shape[0],startInd:calm3d.shape[1]+startInd,:calm3d.shape[2]] = calm3d
-        if calm3d.shape[2] != 34:
-            startInd = (34 - calm3d.shape[2])/2
-            zeroArr0[:calm3d.shape[0],:calm3d.shape[1],startInd:calm3d.shape[2]+startInd] = calm3d
-
-
-        if stress3d.shape[0] != 34:
-            startInd = (34 - stress3d.shape[0])/2
-            zeroArr1[startInd:stress3d.shape[0]+startInd,:stress3d.shape[1],:stress3d.shape[2]] = stress3d
-        if stress3d.shape[1] != 34:
-            startInd = (34 - stress3d.shape[1])/2
-            zeroArr1[:stress3d.shape[0],startInd:stress3d.shape[1]+startInd,:stress3d.shape[2]] = stress3d
-        if stress3d.shape[2] != 34:
-            startInd = (34 - stress3d.shape[2])/2
-            zeroArr1[:stress3d.shape[0],:stress3d.shape[1],startInd:stress3d.shape[2]+startInd] = stress3d
+        
+        zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
+        zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
 
     else:
         zeroArr0[:calm3d.shape[0],:calm3d.shape[1],:calm3d.shape[2]] = calm3d
         zeroArr1[:stress3d.shape[0],:stress3d.shape[1],stress3d.shape[2]] = stress3d
 
-    for i in np.arange(zeroArr0.shape[0]):
-        zeroArr0[i] = sklearn.preprocessing.normalize(zeroArr0[i])
-        zeroArr1[i] = sklearn.preprocessing.normalize(zeroArr1[i])
+    zeroArr0[i] = normalise(zeroArr0)
+    zeroArr1[i] = normalise(zeroArr1)
 
     catOut = [zeroArr0, zeroArr1]
     return catOut
@@ -105,38 +86,14 @@ def cropHeart(inp):
           top_left[2]:bottom_right[2]+1]
     return out
 
-def expandData(arr):
+def normalise(inData):
     """
-    Artificially expand (by factor of 512) 3D data by flipping in x, y, z,
-    and rotating 90,180,270 degrees along each unique axis.
+    Normalise 3D data.
     """
-    arrx = arr[:,::-1]
-    arry = arr[:,:,::-1]
-    arrz = arr[:,:,:,::-1]
-    arrxy = arr[:,::-1,::-1]
-    arrxz = arr[:,::-1,:,::-1]
-    arryz = arr[:,:,::-1,::-1]
-    arrxyz = arr[:,::-1,::-1,::-1]
-    rotxArr = np.concatenate((arr,arrx,arry,arrxy,arrxz,arryz,arrxyz))
-
-    rotxArr90 = scipy.ndimage.interpolation.rotate(rotxArr,90,axes=(1,2))
-    rotxArr180 = scipy.ndimage.interpolation.rotate(rotxArr,180,axes=(1,2))
-    rotxArr270 = scipy.ndimage.interpolation.rotate(rotxArr,270,axes=(1,2))
-    rotyArr = np.concatenate((rotxArr,rotxArr90,rotxArr180,rotxArr270))
-
-#    rotyArr90 = scipy.ndimage.interpolation.rotate(rotyArr,90,axes=(2,3))
-#    rotyArr180 = scipy.ndimage.interpolation.rotate(rotyArr,180,axes=(2,3))
-#    rotyArr270 = scipy.ndimage.interpolation.rotate(rotyArr,270,axes=(2,3))
-#    rotzArr = np.concatenate((rotyArr,rotyArr90,rotyArr180,rotyArr270))
-
-#    rotzArr90 = scipy.ndimage.interpolation.rotate(rotzArr,90,axes=(2,3))
-#    rotzArr180 = scipy.ndimage.interpolation.rotate(rotzArr,180,axes=(2,3))
-#    rotzArr270 = scipy.ndimage.interpolation.rotate(rotzArr,270,axes=(2,3))
-#    expArr = rotzArr = np.concatenate((rotzArr,rotzArr90,rotzArr180,rotzArr270))
-    expArr = rotyArr
-
-    mul = expArr.shape[0]/arr.shape[0]
-    return expArr, mul
+    inDataAbs = np.fabs(inData)
+    inDataMax = np.amax(inData)
+    croppednorm = inDataAbs/inDataMax
+    return croppednorm
 
 if __name__ == "__main__":
 
@@ -164,15 +121,7 @@ if __name__ == "__main__":
     k = 3
     kfoldData = np.array_split(shufData, k)
     kfoldLabels = np.array_split(shufLab, k)
-    kfoldLabelsOH = []
-
-    # Expand each k-fold
-    for i in np.arange(k):
-        kfoldData[i], mul = expandData(kfoldData[i])
-        kfoldLabels[i] = np.tile(kfoldLabels[i],mul) # Expand labels by expansion amount
-
-        kfoldData[i], kfoldLabels[i] = sklearn.utils.shuffle(kfoldData[i], kfoldLabels[i], random_state=1)
-        kfoldLabelsOH.append(np.eye(2)[kfoldLabels[i].astype(int)]) # One hot encode
+    kfoldLabelsOH = np.array_split(np.eye(2)[shufLab.astype(int)], k)
 
     # Neural net (two-channel)
 
@@ -200,12 +149,6 @@ if __name__ == "__main__":
         net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
 
         # Fourth layer
-        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
-
-        # Fifth layer
-        net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
-
-        # Sixth layer
         net = tflearn.layers.conv.conv_3d(net, 128, [3,3,3],  activation="leaky_relu")
 
         # Fully connected layers

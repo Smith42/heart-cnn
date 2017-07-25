@@ -122,3 +122,23 @@
 * Trying a CNN with both heart cubes encoded as one (through matrix multiplication).
 * The fake data doesn't seem to be working. I should look for ways to reduce noise in it.
 * There was an error in my normalisation function. I'm going to go back and fix it and see if anything happens.
+* It's finding something, but it looks like it's getting stuck in local minima. I'll fiddle about with the learning rate.
+* Reducing the ppts to 50 healthy 50 unhealthy has got an accuracy of ~70%. This is promising. Maybe the CNN just needs a while to learn?
+* Got this:
+    - <img src="./figures/rocCurves/2017-07-24_14:43:00-3dCNNfakedata.png" alt="ROC curve with new normalisation routine 2017-07-24" style="width:200px;"/>
+* Running again with 400 epochs. Taking ~20 min per k-fold of 100 ppts. I should try this with the full dataset. It will take a long time (~7 hours), so if this works I'll run overnight.
+* Got this for 400 epochs:
+    - <img src="./figures/rocCurves/2017-07-24_15:39:00-3dCNNfakedata.png" alt="ROC curve with new normalisation routine (400 epoch) 2017-07-24" style="width:200px;"/>
+* Set up a job for overnight. We'll see how it does tomorrow.
+
+## 2017-07-25
+* To run headless on a server I need the following at the top (matplotlib uses X by defualt).
+```python
+    import matplotlib
+    matplotlib.use('Agg')
+```
+* Rerunning the 400 epoch 1500 ppt CNN...
+* There may be an issue with the resizing of the arrays into the zeroArr. I think removing the centring code fixes it, and doesn't affect the CNN. Running a test on the 2D CNN.
+    - I can safely remove the centring code.
+* It takes a very long time to denoise the heart cubes. Will need to do this on the server.
+* OOM error! I will need to rewrite the python script so that each k-fold is considered separately. Looks promising though: ~0.6 accuracy after 400 epochs.
