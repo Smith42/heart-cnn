@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     try:
         spec, sens, roc = np.load("./3D-2ch-fakedata/mess.npy")
-    except FileNotFoundError:
+    except IOError: # FileNotFoundError in python3
         print("./mess.npy not found. It will be created at the end of this pass")
         pass
 
