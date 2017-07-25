@@ -11,7 +11,7 @@ import tflearn
 import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
-import scipy
+import scipy, scipy.ndimage
 import datetime
 
 # Import and preprocess data

@@ -6,7 +6,7 @@ import os
 import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
-import scipy
+import scipy, scipy.ndimage
 
 # Import and preprocess data
 
