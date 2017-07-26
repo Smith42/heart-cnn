@@ -3,5 +3,5 @@
 for i in {0..2}
 do
     echo $i
-    python ./cnn.py $i
+    python ./3D-2ch-fakedata/cnn.py $i
 done
