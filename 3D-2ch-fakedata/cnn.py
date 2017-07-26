@@ -83,7 +83,7 @@ if __name__ == "__main__":
     fpr, tpr, th = roc_curve(kfoldLabels[i], predicted[:,1])
     auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
 
-    savefileacc = "./logs/3d-2channel-fakedata-roc_"+str(i)+"-of-"+str(k)+".log"
-    savefileroc = "./logs/3d-2channel-fakedata-acc_"+str(i)+"-of-"+str(k)+".log"
+    savefileacc = "./logs/3d-2channel-fakedata-acc_"+str(i)+"-of-"+str(k-1)+".log"
+    savefileroc = "./logs/3d-2channel-fakedata-roc_"+str(i)+"-of-"+str(k-1)+".log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
     np.savetxt(savefileroc, (tpr,fpr,th), delimiter=",")
