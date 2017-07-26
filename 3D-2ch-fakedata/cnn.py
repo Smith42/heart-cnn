@@ -26,34 +26,6 @@ if __name__ == "__main__":
     kfoldLabels = np.array_split(inLabels, k)
     kfoldLabelsOH = np.array_split(inLabelsOH, k)
 
-    try:
-        spec, sens, auc, tpr, fpr = np.load("./3D-2ch-fakedata/mess.npy")
-    except IOError: # FileNotFoundError in python3
-        print("./3D-2ch-fakedata/mess.npy not found. It will be created at the end of this pass")
-        pass
-
-    # Does spec, sens, and roc exist?
-    try:
-        spec
-    except NameError:
-        spec = []
-    try:
-        sens
-    except NameError:
-        sens = []
-    try:
-        auc
-    except NameError:
-        auc = []
-    try:
-        tpr
-    except NameError:
-        tpr = []
-    try:
-        fpr
-    except NameError:
-        fpr = []
-
     # Neural net (two-channel)
 
     sess = tf.InteractiveSession()
@@ -103,15 +75,15 @@ if __name__ == "__main__":
 
     healthLabel = np.tile([1,0], (len(healthTest), 1))
     illLabel = np.tile([0,1], (len(illTest), 1))
-    sens = np.append(sens, model.evaluate(np.array(healthTest), healthLabel))
-    spec = np.append(spec, model.evaluate(np.array(illTest), illLabel))
+    sens = model.evaluate(np.array(healthTest), healthLabel)
+    spec = model.evaluate(np.array(illTest), illLabel)
 
     # Get roc curve data
     predicted = np.array(model.predict(np.array(kfoldData[i])))
-    fprs, tprs, th = roc_curve(kfoldLabels[i], predicted[:,1])
-    aucs = roc_auc_score(kfoldLabels[i], predicted[:,1])
-    auc = np.append(auc, aucs)
-    fpr.append(fprs)
-    tpr.append(tprs)
+    fpr, tpr, th = roc_curve(kfoldLabels[i], predicted[:,1])
+    auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
 
-    np.save("./3D-2ch-fakedata/mess", (spec, sens, auc, [tpr], [fpr]))
+    savefileacc = "./logs/3d-2channel-fakedata-roc_"+str(i)+"-of-"+str(k)+".log"
+    savefileroc = "./logs/3d-2channel-fakedata-acc_"+str(i)+"-of-"+str(k)+".log"
+    np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
+    np.savetxt(savefileroc, (tpr,fpr,th), delimiter=",")
