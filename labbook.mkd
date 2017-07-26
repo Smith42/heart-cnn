@@ -142,3 +142,6 @@
     - I can safely remove the centring code.
 * It takes a very long time to denoise the heart cubes. Will need to do this on the server.
 * OOM error! I will need to rewrite the python script so that each k-fold is considered separately. Looks promising though: ~0.6 accuracy after 400 epochs.
+
+## 2017-07-26
+* The results from the latest run have training accuracy at 55%, with validation accuracy around the same. I'll try again with less regularisation (it may be underfitting).

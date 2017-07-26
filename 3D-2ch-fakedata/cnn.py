@@ -29,7 +29,7 @@ if __name__ == "__main__":
     try:
         spec, sens, auc, tpr, fpr = np.load("./3D-2ch-fakedata/mess.npy")
     except IOError: # FileNotFoundError in python3
-        print("./mess.npy not found. It will be created at the end of this pass")
+        print("./3D-2ch-fakedata/mess.npy not found. It will be created at the end of this pass")
         pass
 
     # Does spec, sens, and roc exist?
@@ -73,13 +73,13 @@ if __name__ == "__main__":
 
     # Fully connected layers
     net = tflearn.layers.core.fully_connected(net, 2048, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
-    net = tflearn.layers.core.dropout(net, keep_prob=0.5)
+    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     net = tflearn.layers.core.fully_connected(net, 1024, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
-    net = tflearn.layers.core.dropout(net, keep_prob=0.5)
+    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     net = tflearn.layers.core.fully_connected(net, 512, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
-    net = tflearn.layers.core.dropout(net, keep_prob=0.5)
+    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
     net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     fprs, tprs, th = roc_curve(kfoldLabels[i], predicted[:,1])
     aucs = roc_auc_score(kfoldLabels[i], predicted[:,1])
     auc = np.append(auc, aucs)
-    fpr = np.append(fpr, fprs)
-    tpr = np.append(tpr, tprs)
+    fpr.append(fprs)
+    tpr.append(tprs)
 
     np.save("./3D-2ch-fakedata/mess", (spec, sens, auc, [tpr], [fpr]))
