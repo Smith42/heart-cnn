@@ -44,25 +44,27 @@ if __name__ == "__main__":
     net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
 
     # Fully connected layers
-    net = tflearn.layers.core.fully_connected(net, 2048, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
+    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 1024, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
+    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 512, regularizer="L2", weight_decay=0.01, activation="leaky_relu")
+    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
     net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.000001, loss='categorical_crossentropy')
+    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
     dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
     dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=400, show_metric=True)
+    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=500, show_metric=True)
+    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
+    model.save("./models/"+dt+"_3d-2channel-fakedata_"+str(i)+"-of-"+str(k)+".tflearn")
 
     # Get sensitivity and specificity
     illTest = []
@@ -83,7 +85,7 @@ if __name__ == "__main__":
     fpr, tpr, th = roc_curve(kfoldLabels[i], predicted[:,1])
     auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
 
-    savefileacc = "./logs/3d-2channel-fakedata-acc_"+str(i)+"-of-"+str(k-1)+".log"
-    savefileroc = "./logs/3d-2channel-fakedata-roc_"+str(i)+"-of-"+str(k-1)+".log"
+    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_"+str(i)+"-of-"+str(k-1)+".log"
+    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_"+str(i)+"-of-"+str(k-1)+".log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
-    np.savetxt(savefileroc, (tpr,fpr,th), delimiter=",")
+    np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
