@@ -50,31 +50,36 @@ def modelLoad(modelPath):
     net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
     model = tflearn.DNN(net)
     model.load(modelPath)
+    return model
 
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
-    inData = np.load("")
-    inLabels= np.load("")
+    inData = np.load("./data/shufData.npy")
+    inLabels= np.load("./data/shufLabels.npy")
+    modelPaths = ["0","1","2","3","4"] # Put model paths here.
 
-    modelLoad("../models/2017-07-27_12:51:00_3d-2channel-fakedata_0-of-3.tflearn")
+    k = 5
 
-    # Get sensitivity and specificity
-    illTest = []
-    healthTest = []
-    for index, item in enumerate(inLabels):
-        if item == 1:
-            illTest.append(inData[index])
-        if item == 0:
-            healthTest.append(inData[index])
+    for i in np.arange(k):
+        model = modelLoad(modelPaths[i])
 
-    healthLabel = np.tile([1,0], (len(healthTest), 1))
-    illLabel = np.tile([0,1], (len(illTest), 1))
-    sens = model.evaluate(np.array(healthTest), healthLabel)
-    spec = model.evaluate(np.array(illTest), illLabel)
+        # Get sensitivity and specificity
+        illTest = []
+        healthTest = []
+        for index, item in enumerate(inLabels):
+            if item == 1:
+                illTest.append(inData[index])
+            if item == 0:
+                healthTest.append(inData[index])
 
-    # Get roc curve data
-    predicted = np.array(model.predict(np.array(inData)))
-    fpr, tpr, th = roc_curve(inLabels, predicted[:,1])
-    auc = roc_auc_score(inLabels, predicted[:,1])
+        healthLabel = np.tile([1,0], (len(healthTest), 1))
+        illLabel = np.tile([0,1], (len(illTest), 1))
+        sens = model.evaluate(np.array(healthTest), healthLabel)
+        spec = model.evaluate(np.array(illTest), illLabel)
 
-    print(spec, sens, auc)
+        # Get roc curve data
+        predicted = np.array(model.predict(np.array(inData)))
+        fpr, tpr, th = roc_curve(inLabels, predicted[:,1])
+        auc = roc_auc_score(inLabels, predicted[:,1])
+
+        print(spec, sens, auc)
