@@ -9,7 +9,7 @@ import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
 import scipy
-import datetime
+import datetime, time
 import tensorflow as tf
 import tflearn
 
@@ -53,31 +53,34 @@ def modelLoad(modelPath):
     model.load(modelPath)
     return model
 
-def getAUC(inData, inLabels, maskWidth, i, j, k):
+def getLoss(inData, inLabel, maskWidth, i, j, k):
     """
     Mask an area of a set of ppt arrays with zeros and get the AUC score for the modified arrays.
     Return AUC score.
     """
     mArr = np.zeros(inData.shape)
     ones = np.ones(inData.shape[0], maskWidth, maskWidth, maskWidth, 2)
-    mArr[:,i:i+maskWidth,j:j+maskwidth,k:k+maskwidth] = ones # Set mask array for this index
+    mArr[i:i+maskWidth,j:j+maskwidth,k:k+maskwidth] = ones # Set mask array for this index
     mInData = np.ma.MaskedArray(inData, mask=mArr)
     mInData = np.ma.MaskedArray.filled(mInData, fill_value=0)
     predicted = np.array(model.predict(mInData))
-    auc = roc_auc_score(inLabels, predicted[:,1])
-    return auc
+    loss = abs(predicted[:,1]-inLabel) # Simple loss function so we can see how close we are to being right
+    return loss
 
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
-    inData = np.load("./3D-2ch-fakedata/data/inData.npy")
-    inLabels= np.load("./3D-2ch-fakedata/data/inLabels.npy")
+    inData = np.load("./3D-2ch-fakedata/data/inData.npy")[20]
+    inLabels= np.load("./3D-2ch-fakedata/data/inLabels.npy")[20]
 
     model = modelLoad("modelstr")
 
-    maskWidth = 3
+    maskWidth = 5
     aucCube = np.zeros(inData.shape[1:4])
 
     for i in np.arange(inData.shape[1] - maskWidth):
         for j in np.arange(inData.shape[2] - maskWidth):
             for k in np.arange(inData.shape[3] - maskWidth):
-                aucCube[i,j,k] = getAUC(inData, inLabels, maskWidth, i, j, k) # Only works for maskWidth == 3.
+                aucCube[i,j,k] = getLoss(inData, inLabels, maskWidth, i, j, k)
+                print(i,j,k,":",aucCube[i,j,k])
+
+    np.save("./aucCube", aucCube)
