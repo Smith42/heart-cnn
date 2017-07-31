@@ -5,6 +5,7 @@ matplotlib.use("Agg") # the code headless.
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import sys
 import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -55,31 +56,31 @@ def modelLoad(modelPath):
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
     inData = np.load("./data/shufData.npy")
-    inLabels= np.load("./data/shufLabels.npy")
+    inLabels= np.load("./data/shufLab.npy")
     modelPaths = ["0","1","2","3","4"] # Put model paths here.
 
+    i = int(sys.argv[1]) # i is current kfold
     k = 5
 
-    for i in np.arange(k):
-        model = modelLoad(modelPaths[i])
+    model = modelLoad(modelPaths[i])
 
-        # Get sensitivity and specificity
-        illTest = []
-        healthTest = []
-        for index, item in enumerate(inLabels):
-            if item == 1:
-                illTest.append(inData[index])
-            if item == 0:
-                healthTest.append(inData[index])
+    # Get sensitivity and specificity
+    illTest = []
+    healthTest = []
+    for index, item in enumerate(inLabels):
+        if item == 1:
+            illTest.append(inData[index])
+        if item == 0:
+            healthTest.append(inData[index])
 
-        healthLabel = np.tile([1,0], (len(healthTest), 1))
-        illLabel = np.tile([0,1], (len(illTest), 1))
-        sens = model.evaluate(np.array(healthTest), healthLabel)
-        spec = model.evaluate(np.array(illTest), illLabel)
+    healthLabel = np.tile([1,0], (len(healthTest), 1))
+    illLabel = np.tile([0,1], (len(illTest), 1))
+    sens = model.evaluate(np.array(healthTest), healthLabel)
+    spec = model.evaluate(np.array(illTest), illLabel)
 
-        # Get roc curve data
-        predicted = np.array(model.predict(np.array(inData)))
-        fpr, tpr, th = roc_curve(inLabels, predicted[:,1])
-        auc = roc_auc_score(inLabels, predicted[:,1])
+    # Get roc curve data
+    predicted = np.array(model.predict(np.array(inData)))
+    fpr, tpr, th = roc_curve(inLabels, predicted[:,1])
+    auc = roc_auc_score(inLabels, predicted[:,1])
 
-        print(spec, sens, auc)
+    print(spec, sens, auc)
