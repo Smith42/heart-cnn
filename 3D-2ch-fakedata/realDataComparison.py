@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
     inData = np.load("./data/shufData.npy")
     inLabels= np.load("./data/shufLab.npy")
-    modelPaths = ["0","1","2","3","4"] # Put model paths here.
+    modelPaths = ["./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn","./models/2017-07-28_03:21:00_3d-2channel-fakedata_1-of-5.tflearn","./models/2017-07-28_08:01:00_3d-2channel-fakedata_2-of-5.tflearn","./models/2017-07-28_12:42:00_3d-2channel-fakedata_3-of-5.tflearn","./models/2017-07-28_17:23:00_3d-2channel-fakedata_4-of-5.tflearn"] # Put model paths here.
 
     i = int(sys.argv[1]) # i is current kfold
     k = 5
@@ -83,4 +83,7 @@ if __name__ == "__main__":
     fpr, tpr, th = roc_curve(inLabels, predicted[:,1])
     auc = roc_auc_score(inLabels, predicted[:,1])
 
-    print(spec, sens, auc)
+    savefileacc = "./logs/"+dt+"_3d-2channel-realdata-acc_"+str(i)+"-of-"+str(k-1)+".log"
+    savefileroc = "./logs/"+dt+"_3d-2channel-realdata-roc_"+str(i)+"-of-"+str(k-1)+".log"
+    np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
+    np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
