@@ -63,7 +63,6 @@ if __name__ == "__main__":
     k = 5
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
 
-
     model = modelLoad(modelPaths[i])
 
     # Get sensitivity and specificity

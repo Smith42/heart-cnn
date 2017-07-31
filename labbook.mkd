@@ -284,3 +284,5 @@
 
 * Avg AUC, spec, sens (over 5 k-folds): 0.762, 0.630, 0.735.
      - <img src="./figures/rocCurves/2017-07-31_10:29:00-3dCNN2chfakedata.png" alt="ROC curve from less regularised CNN 2017-07-28" style="width: 200px;"/>
+* Results for the models applied to real data (avg AUC, spec, sens): 0.544, 0.814, 0.207.
+     - <img src="./figures/rocCurves/2017-07-31_13:26:00-3dCNN2chrealdata.png" alt="ROC curve from application of CNN 2017-07-28 to real data" style="width:200px;"/>
