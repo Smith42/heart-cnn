@@ -43,6 +43,9 @@ if __name__ == "__main__":
     net = tflearn.layers.conv.conv_3d(net, 64, [5,5,5],  activation="leaky_relu")
     net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
 
+    # Third layer:
+    net = tflearn.layers.conv.conv_3d(net, 128, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-07-28
+
     # Fully connected layers
     net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     # Train the model, leaving out the kfold not being used
     dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
     dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=500, show_metric=True)
+    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=150, show_metric=True) # In practice learning stops ~150 epochs.
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
     model.save("./models/"+dt+"_3d-2channel-fakedata_"+str(i)+"-of-"+str(k)+".tflearn")
 
