@@ -61,6 +61,8 @@ if __name__ == "__main__":
 
     i = int(sys.argv[1]) # i is current kfold
     k = 5
+    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
+
 
     model = modelLoad(modelPaths[i])
 
