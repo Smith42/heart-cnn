@@ -98,5 +98,5 @@ if __name__ == "__main__":
     lossCube = normalise(lossCube)
 
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    np.save("./"+dt+"_ppt"+str(ppt)+"_lossCube", lossCube)
-    np.save("./"+dt+"_ppt"+str(ppt)+"_heartCube", inData[1:])
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_lossCube", lossCube)
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_heartCube", inData[0])
