@@ -67,6 +67,15 @@ def getLoss(inData, inLabel, maskWidth, i, j, k):
     loss = abs(predicted[:,1]-inLabel) # Simple loss function so we can see how close we are to being right
     return loss
 
+def normalise(inData):
+    """
+    Normalise 3D array.
+    """
+    inDataAbs = np.fabs(inData)
+    inDataMax = np.amax(inData)
+    normalisedData = inDataAbs/inDataMax
+    return normalisedData
+
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
     ppt = 20
@@ -77,7 +86,7 @@ if __name__ == "__main__":
     model = modelLoad("./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
 
     maskWidth = 5
-    lossCube = np.ones(inData.shape[1:4])
+    lossCube = np.zeros(inData.shape[1:4])
 
     for i in np.arange(inData.shape[1] - maskWidth):
         for j in np.arange(inData.shape[2] - maskWidth):
@@ -85,6 +94,8 @@ if __name__ == "__main__":
                 loss = getLoss(inData, inLabels, maskWidth, i, j, k)
                 lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth] = lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth]+loss
                 print(i,j,k,":",loss,";",lossCube[i,j,k])
+
+    lossCube = normalise(lossCube)
 
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
     np.save("./"+dt+"_ppt"+str(ppt)+"_lossCube", lossCube)
