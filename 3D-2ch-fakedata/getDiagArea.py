@@ -86,9 +86,9 @@ if __name__ == "__main__":
     model = modelLoad("./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
 
     # Does the CNN predict correctly in the first place?
-    p = model.predict(inData[0])[:,1]
+    p = model.predict(inData)[:,1]
     if abs(p - inLabels) >= 0.5:
-        print("Model predicts", p, "but we want", inLabels, "quitting...")
+        print("Model predicts:", p, "but we want:", inLabels, ". Quitting...")
         exit()
 
     maskWidth = 6 # Might be more representative to have this as even.
