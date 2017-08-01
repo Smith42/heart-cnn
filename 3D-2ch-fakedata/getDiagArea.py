@@ -85,15 +85,15 @@ if __name__ == "__main__":
 
     model = modelLoad("./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
 
-    maskWidth = 5
+    maskWidth = 6 # Might be more representative to have this as even.
     lossCube = np.zeros(inData.shape[1:4])
 
-    for i in np.arange(inData.shape[1] - maskWidth):
-        for j in np.arange(inData.shape[2] - maskWidth):
-            for k in np.arange(inData.shape[3] - maskWidth):
+    for i in np.arange(inData.shape[1] - maskWidth + 1):
+        for j in np.arange(inData.shape[2] - maskWidth + 1):
+            for k in np.arange(inData.shape[3] - maskWidth + 1):
                 loss = getLoss(inData, inLabels, maskWidth, i, j, k)
-                lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth] = lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth]+loss
-                print(i,j,k,":",loss,";",lossCube[i,j,k])
+                lossCube[i+maskWidth/2,j+maskWidth/2,k+maskWidth/2] = loss
+                print(i+maskWidth/2,j+maskWidth/2,k+maskWidth/2,":",loss)
 
     lossCube = normalise(lossCube)
 
