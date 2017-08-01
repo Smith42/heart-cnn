@@ -67,7 +67,7 @@ if __name__ == "__main__":
     dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
     model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=150, show_metric=True) # In practice learning stops ~150 epochs.
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    model.save("./models/"+dt+"_3d-2channel-fakedata_"+str(i)+"-of-"+str(k)+".tflearn")
+    model.save("./models/"+dt+"_3d-2channel-fakedata_"+str(i)+"-of-"+str(k-1)+".tflearn")
 
     # Get sensitivity and specificity
     illTest = []

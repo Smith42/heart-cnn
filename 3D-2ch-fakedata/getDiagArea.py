@@ -69,19 +69,23 @@ def getLoss(inData, inLabel, maskWidth, i, j, k):
 
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
-    inData = np.load("./3D-2ch-fakedata/data/inData.npy")[20]
+    ppt = 20
+    inData = np.load("./3D-2ch-fakedata/data/inData.npy")[ppt]
     inData = inData[np.newaxis,...]
-    inLabels= np.load("./3D-2ch-fakedata/data/inLabels.npy")[20]
+    inLabels= np.load("./3D-2ch-fakedata/data/inLabels.npy")[ppt]
 
-    model = modelLoad("modelstr")
+    model = modelLoad("./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
 
     maskWidth = 5
-    aucCube = np.ones(inData.shape[1:4])
+    lossCube = np.ones(inData.shape[1:4])
 
     for i in np.arange(inData.shape[1] - maskWidth):
         for j in np.arange(inData.shape[2] - maskWidth):
             for k in np.arange(inData.shape[3] - maskWidth):
-                aucCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth] = aucCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth]*getLoss(inData, inLabels, maskWidth, i, j, k)
-                print(i,j,k,":",aucCube[i,j,k])
+                loss = getLoss(inData, inLabels, maskWidth, i, j, k)
+                lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth] = lossCube[i:i+maskWidth,j:j+maskWidth,k:k+maskWidth]+loss
+                print(i,j,k,":",loss,";",lossCube[i,j,k])
 
-    np.save("./aucCube1", aucCube)
+    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
+    np.save("./"+dt+"_ppt"+str(ppt)+"_lossCube", lossCube)
+    np.save("./"+dt+"_ppt"+str(ppt)+"_heartCube", inData[1:])
