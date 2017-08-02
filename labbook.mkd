@@ -289,3 +289,9 @@
      
 ## 2017-08-01
 * The visualisation of where the CNN is diagnosing the patient is ready, but it doesn't seem to be looking in the correct places. Maybe the two matrices aren't aligned properly?
+
+## 2017-08-02
+* Adding another conv layer to the CNN doesn't improve things. Moving back to previous CNN...
+* Wrote a standalone visualisation for the loss cubes.
+* I will tinker around with the CNN and see if I can get any more performance out of it.
+* Added another FC layer to the CNN. We'll see how it does.
