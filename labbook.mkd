@@ -304,4 +304,5 @@
 ## 2017-08-03
 * OOM when running prediction on new cnn. It is only getting ~0.63 accuracy on the validation dataset so no big loss. Reverting to previous cnn...
 * Looks like the OOM error is due to using 2000 training samples in the data.
+* The CNN is looking in the "wrong place" to find the problems... I don't know why but it is diagnosing the images correctly.
 

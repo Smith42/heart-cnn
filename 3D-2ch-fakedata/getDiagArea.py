@@ -91,7 +91,7 @@ if __name__ == "__main__":
         print("Model predicts:", p, "but we want:", inLabels, ". Quitting...")
         exit()
 
-    maskWidth = 12 # Might be more representative to have this as even.
+    maskWidth = 4 # Might be more representative to have this as even.
     lossCube = np.zeros(inData.shape[1:4])
 
     for i in np.arange(inData.shape[1] - maskWidth + 1):
@@ -104,5 +104,5 @@ if __name__ == "__main__":
     lossCube = normalise(lossCube)
 
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_lossCube", lossCube)
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_heartCube", inData[0])
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_lossCube", lossCube)
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0])

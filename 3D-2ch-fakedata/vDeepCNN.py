@@ -35,25 +35,25 @@ if __name__ == "__main__":
     # Input layer:
     net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
-    net = tflearn.layers.conv.conv_3d(net, 64, 7, activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 7, activation="leaky_relu")
     net = tflearn.layers.conv.max_pool_3d(net, 2, strides=2)
 
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
 
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="leaky_relu")
 
-    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="leaky_relu")
     net = tflearn.layers.conv.max_pool_3d(net, 2, strides=2)
 
-    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="leaky_relu")
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="leaky_relu")
 
     net = tflearn.layers.conv.avg_pool_3d(net, [9,9,9], padding='valid')
 
