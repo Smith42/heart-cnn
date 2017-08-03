@@ -17,8 +17,8 @@ if __name__ == "__main__":
     i = int(sys.argv[1]) # i is current kfold
     k = 3 # k folds
 
-    inData = np.load("./3D-2ch-fakedata/data/inData1000.npy")
-    inLabels = np.load("./3D-2ch-fakedata/data/inLabels1000.npy")
+    inData = np.load("./3D-2ch-fakedata/data/inData.npy")
+    inLabels = np.load("./3D-2ch-fakedata/data/inLabels.npy")
     inLabelsOH = np.eye(2)[inLabels.astype(int)] # One hot encode
 
     # k fold the data
@@ -35,12 +35,12 @@ if __name__ == "__main__":
     # Input layer:
     net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
-    net = tflearn.layers.conv.conv_3d(net, 32, 7, activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 7, activation="relu")
     net = tflearn.layers.conv.max_pool_3d(net, 2, strides=2)
 
-    net = tflearn.layers.conv.conv_3d(net, 32, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 32, 3,  activation="relu")
-    net = tflearn.layers.conv.conv_3d(net, 32, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
 
     net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
     net = tflearn.layers.conv.conv_3d(net, 64, 3,  activation="relu")
@@ -49,19 +49,24 @@ if __name__ == "__main__":
     net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
     net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
     net = tflearn.layers.conv.conv_3d(net, 128, 3,  activation="relu")
+    net = tflearn.layers.conv.max_pool_3d(net, 2, strides=2)
 
-    net = tflearn.layers.conv.avg_pool_3d(net, [17,17,17], padding='valid')
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
+    net = tflearn.layers.conv.conv_3d(net, 256, 3,  activation="relu")
+
+    net = tflearn.layers.conv.avg_pool_3d(net, [9,9,9], padding='valid')
 
     # Output layer:
     net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
+    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.000001, loss='categorical_crossentropy')
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
     dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
     dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=150, show_metric=True) # In practice learning stops ~150 epochs.
+    model.fit(dummyData, dummyLabels, batch_size=100, n_epoch=600, show_metric=True) # In practice learning stops ??? epochs.
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
     model.save("./models/"+dt+"_3d-vDeepCNN-fakedata_"+str(i)+"-of-"+str(k-1)+".tflearn")
 

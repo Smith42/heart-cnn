@@ -79,11 +79,11 @@ def normalise(inData):
 if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
     ppt = 20
-    inData = np.load("./3D-2ch-fakedata/data/inData.npy")[ppt]
+    inData = np.load("/tmp/inData.npy")[ppt]
     inData = inData[np.newaxis,...]
-    inLabels= np.load("./3D-2ch-fakedata/data/inLabels.npy")[ppt]
+    inLabels= np.load("/tmp/inLabels.npy")[ppt]
 
-    model = modelLoad("./models/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
+    model = modelLoad("/tmp/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
 
     # Does the CNN predict correctly in the first place?
     p = model.predict(inData)[:,1]
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         print("Model predicts:", p, "but we want:", inLabels, ". Quitting...")
         exit()
 
-    maskWidth = 6 # Might be more representative to have this as even.
+    maskWidth = 12 # Might be more representative to have this as even.
     lossCube = np.zeros(inData.shape[1:4])
 
     for i in np.arange(inData.shape[1] - maskWidth + 1):

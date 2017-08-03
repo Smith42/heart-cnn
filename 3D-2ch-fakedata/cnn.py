@@ -56,9 +56,6 @@ if __name__ == "__main__":
     net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 256, activation="leaky_relu") # regularizer="L2", weight_decay=0.01, # Added 2017-08-02
-    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
-
     # Output layer:
     net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 

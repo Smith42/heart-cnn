@@ -295,3 +295,13 @@
 * Wrote a standalone visualisation for the loss cubes.
 * I will tinker around with the CNN and see if I can get any more performance out of it.
 * Added another FC layer to the CNN. We'll see how it does.
+* Tried using a larger filter in the getDiagArea.py file. Running now, will take a while because the GPU is busy with the new CNN.
+    - Looking at the STDOUT it seems like the filter may be too large. I should try a smaller one next time (4?).
+* The new CNN doesn't seem to have improved on the previous either. Maybe I need to change the learning rate or the number of epochs?
+* It might be helpful to write a GAN so that we can see what the CNN decides a heart cube looks like.
+* I have found this: [](https://arxiv.org/pdf/1512.03385v1.pdf). When the latest CNN is done training I'll use a very deep cnn to see if we can do any better than 70% acc.
+
+## 2017-08-03
+* OOM when running prediction on new cnn. It is only getting ~0.63 accuracy on the validation dataset so no big loss. Reverting to previous cnn...
+* Looks like the OOM error is due to using 2000 training samples in the data.
+
