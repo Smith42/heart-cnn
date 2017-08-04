@@ -4,8 +4,8 @@ from mayavi import mlab
 # Show interactive image of the loss of the CNN when an area of the heart cube is obscured.
 
 if __name__ == "__main__":
-    heartCube = np.load("../logs/lossCubes/2017-08-03_10:53:00_ppt50_4_heartCube.npy")[...,0] # 1 is stressed, 0 is calm
-    lossCube = np.load("../logs/lossCubes/2017-08-03_10:53:00_ppt50_4_lossCube.npy")
+    heartCube = np.load("../logs/lossCubes/2017-08-03_10:39:00_ppt20_4_heartCube.npy")[...,1] # 1 is stressed, 0 is calm
+    lossCube = np.load("../logs/lossCubes/2017-08-03_10:39:00_ppt20_4_lossCube.npy")
 
     mlab.pipeline.iso_surface(mlab.pipeline.scalar_field(lossCube), opacity=0.4)
 

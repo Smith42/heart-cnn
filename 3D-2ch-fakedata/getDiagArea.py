@@ -53,14 +53,14 @@ def modelLoad(modelPath):
     model.load(modelPath)
     return model
 
-def getLoss(inData, inLabel, maskWidth, i, j, k):
+def getLoss(inData, inLabel, maskWidth, j, k, l):
     """
     Mask an area of a set of ppt arrays with zeros and get the AUC score for the modified arrays.
     Return AUC score.
     """
     mArr = np.zeros(inData.shape)
     ones = np.ones((inData.shape[0], maskWidth, maskWidth, maskWidth, 2))
-    mArr[:,i:i+maskWidth,j:j+maskWidth,k:k+maskWidth] = ones # Set mask array for this index
+    mArr[:,j:j+maskWidth,k:k+maskWidth,l:l+maskWidth] = ones # Set mask array for this index
     mInData = np.ma.MaskedArray(inData, mask=mArr)
     mInData = np.ma.MaskedArray.filled(mInData, fill_value=0)
     predicted = np.array(model.predict(mInData))
@@ -77,13 +77,17 @@ def normalise(inData):
     return normalisedData
 
 if __name__ == "__main__":
+    kfold = 3 # How many kfolds?
+    i = int(sys.argv[1]) # i is current kfold
+
     # inData are heartcubes with same shape as those used in the CNN
     ppt = 20
     inData = np.load("/tmp/inData.npy")[ppt]
     inData = inData[np.newaxis,...]
     inLabels= np.load("/tmp/inLabels.npy")[ppt]
 
-    model = modelLoad("/tmp/2017-07-27_22:40:00_3d-2channel-fakedata_0-of-5.tflearn")
+    models = ["model0", "model1","model2"]
+    model = modelLoad(models[i])
 
     # Does the CNN predict correctly in the first place?
     p = model.predict(inData)[:,1]
@@ -94,15 +98,17 @@ if __name__ == "__main__":
     maskWidth = 4 # Might be more representative to have this as even.
     lossCube = np.zeros(inData.shape[1:4])
 
-    for i in np.arange(inData.shape[1] - maskWidth + 1):
-        for j in np.arange(inData.shape[2] - maskWidth + 1):
-            for k in np.arange(inData.shape[3] - maskWidth + 1):
-                loss = getLoss(inData, inLabels, maskWidth, i, j, k)
+    for j in np.arange(inData.shape[1] - maskWidth + 1):
+        for k in np.arange(inData.shape[2] - maskWidth + 1):
+            for l in np.arange(inData.shape[3] - maskWidth + 1):
+                loss = getLoss(inData, inLabels, maskWidth, j, k, l)
                 lossCube[i+maskWidth/2,j+maskWidth/2,k+maskWidth/2] = loss
                 print(i+maskWidth/2,j+maskWidth/2,k+maskWidth/2,":",loss)
 
     lossCube = normalise(lossCube)
 
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_lossCube", lossCube)
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0])
+
+    if i == 0:
+        np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0]) # We only need to save the heartcube once...
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_lossCube-"+str(i)+"-of-"+str(kfold-1), lossCube)
