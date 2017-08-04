@@ -62,7 +62,7 @@ if __name__ == "__main__":
     # Output layer:
     net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
-    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.000001, loss='categorical_crossentropy')
+    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.00001, loss='categorical_crossentropy')
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
