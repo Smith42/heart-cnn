@@ -345,3 +345,11 @@
 
 ## 2017-08-04
 * vDeepCNN with average pooling at the end doesn't seem to work. It does seem to work with FC layers. I'll set that running before I leave.
+* Running the getDiagArea k-folding doesn't seem to show anything new... Why is the CNN looking at where it is?
+    - <img src="./figures/diagnoses/heatmapExample1.png" alt="Heatmap example of all k-folds patient 20 in inData.npy" style="width: 200px;"/> 
+* It seems like the CNN is looking at the denser bits of the heatmap.
+* I could try training the CNN on the simulated data and then fine-tuning the CNN on the real data...
+
+## 2017-08-07
+* Only using the real data doesn't find anything.
+* Finetuning model with cnnFinetune.py

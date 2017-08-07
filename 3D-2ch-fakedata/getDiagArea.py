@@ -9,6 +9,7 @@ import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
 import scipy
+import sys
 import datetime, time
 import tensorflow as tf
 import tflearn
@@ -94,16 +95,18 @@ if __name__ == "__main__":
     if abs(p - inLabels) >= 0.5:
         print("Model predicts:", p, "but we want:", inLabels, ". Quitting...")
         exit()
+    else:
+        print("Model predicts:", p, "we want:", inLabels, ".")
 
-    maskWidth = 4 # Might be more representative to have this as even.
+    maskWidth = 8 # Might be more representative to have this as even.
     lossCube = np.zeros(inData.shape[1:4])
 
     for j in np.arange(inData.shape[1] - maskWidth + 1):
         for k in np.arange(inData.shape[2] - maskWidth + 1):
             for l in np.arange(inData.shape[3] - maskWidth + 1):
                 loss = getLoss(inData, inLabels, maskWidth, j, k, l)
-                lossCube[i+maskWidth/2,j+maskWidth/2,k+maskWidth/2] = loss
-                print(i+maskWidth/2,j+maskWidth/2,k+maskWidth/2,":",loss)
+                lossCube[j+maskWidth/2,k+maskWidth/2,l+maskWidth/2] = loss
+                print(j+maskWidth/2,k+maskWidth/2,l+maskWidth/2,":",loss)
 
     lossCube = normalise(lossCube)
 
