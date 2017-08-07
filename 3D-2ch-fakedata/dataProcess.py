@@ -4,6 +4,7 @@ import numpy as np
 import pyfits
 import os
 import sklearn
+import h5py
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
 import scipy, scipy.ndimage
@@ -96,11 +97,11 @@ if __name__ == "__main__":
 
     # Do data import
     abName = "ischaemia"
-    abDat = importType(abName,750)
+    abDat = importType(abName,1000)
     abDat = np.moveaxis(abDat,1,-1)
 
     normName = "healthy"
-    normDat = importType(normName,750) # Normal and abnormal data same number of ppts
+    normDat = importType(normName,1000) # Normal and abnormal data same number of ppts
     normDat = np.moveaxis(normDat,1,-1)
 
     inData = np.concatenate([normDat, abDat])
@@ -112,8 +113,13 @@ if __name__ == "__main__":
 
     # Mutual shuffle
     shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
+    shufLabOH = np.eye(2)[shufLabels.astype(int)] # One hot encode
     shufData = np.reshape(shufData,(-1,34,34,34,2))
 
-    # Save data as np object:
-    np.save("./3D-2ch-fakedata/data/inData", shufData)
-    np.save("./3D-2ch-fakedata/data/inLabels", shufLab)
+    # Save data as HDF5 object:
+    h5f = h5py.File("./data/twoThousand.h5", w)
+    h5f.create_dataset("inData", data=shufData[:1900])
+    h5f.create_dataset("inLabels", data=shufLabOH[:1900])
+    h5f.create_dataset("inData_test", data=shufData[1900:])
+    h5f.create_dataset("inLabels_test", data=shufLabOH[1900:])
+    h5f.close()

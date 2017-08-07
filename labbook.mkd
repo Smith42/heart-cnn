@@ -353,3 +353,11 @@
 ## 2017-08-07
 * Only using the real data doesn't find anything.
 * Finetuning model with cnnFinetune.py
+* It works well!
+    - <img src="./figures/rocCurves/2017-08-07_14:13:00-finetunedCNNrealdata.png" alt="Finetuned CNN ROC curve" style="width: 200px;"/>
+    - <img src="./figures/rocCurves/2017-08-07_14:41:00-finetunedCNNrealdata.png" alt="Finetuned CNN ROC curve" style="width: 200px;"/>
+* Trying with learning rate = 0.00001, 50 epochs:
+    - <img src="./figures/rocCurves/2017-08-07_15:03:00-finetunedCNNrealdata.png" alt="Finetuned CNN ROC curve" style="width: 200px;"/>
+* Getting better results with the fake data would probably correspond to better results in the finetuned CNN with real data.
+* Since we have an unlimited amount of fake data I should find a way to get it working without an OOM error.
+* I am rewriting the CNN to handle the data via HDF5.
