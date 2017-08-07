@@ -117,7 +117,7 @@ if __name__ == "__main__":
     shufData = np.reshape(shufData,(-1,34,34,34,2))
 
     # Save data as HDF5 object:
-    h5f = h5py.File("./data/twoThousand.h5", w)
+    h5f = h5py.File("./data/twoThousand.h5", "w")
     h5f.create_dataset("inData", data=shufData[:1900])
     h5f.create_dataset("inLabels", data=shufLabOH[:1900])
     h5f.create_dataset("inData_test", data=shufData[1900:])
