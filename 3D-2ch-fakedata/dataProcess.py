@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     # Mutual shuffle
     shufData, shufLab = sklearn.utils.shuffle(inData, labels, random_state=1)
-    shufLabOH = np.eye(2)[shufLabels.astype(int)] # One hot encode
+    shufLabOH = np.eye(2)[shufLab.astype(int)] # One hot encode
     shufData = np.reshape(shufData,(-1,34,34,34,2))
 
     # Save data as HDF5 object:

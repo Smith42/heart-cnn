@@ -15,7 +15,7 @@ import datetime
 # Import and preprocess data
 
 if __name__ == "__main__":
-    h5f = h5py.File("./data/twoThousand.h5")
+    h5f = h5py.File("./data/twoThousand.h5", "r")
     inData = h5f["inData"]
     inLabelsOH = h5f["inLabels"]
     inData_test = h5f["inData_test"]
