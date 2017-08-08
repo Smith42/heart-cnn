@@ -9,25 +9,19 @@ import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
 import scipy
+import h5py
 import datetime
 
 # Import and preprocess data
 
 if __name__ == "__main__":
-    i = int(sys.argv[1]) # i is current kfold
-    k = 5 # k folds
-
-    inData = np.load("./data/shufData.npy")
-    inLabels = np.load("./data/shufLabs.npy")
-    inLabelsOH = np.eye(2)[inLabels.astype(int)] # One hot encode
-
-    # k fold the data
-    kfoldData = np.array_split(inData, k)
-    kfoldLabels = np.array_split(inLabels, k)
-    kfoldLabelsOH = np.array_split(inLabelsOH, k)
+    h5f = h5py.File("./data/twoThousand.h5", "r")
+    inData = h5f["inData"]
+    inLabelsOH = h5f["inLabels"]
+    inData_test = h5f["inData_test"]
+    inLabelsOH_test = h5f["inLabels_test"]
 
     # Neural net (two-channel)
-
     sess = tf.InteractiveSession()
     tf.reset_default_graph()
     tflearn.initializations.normal()
@@ -57,27 +51,25 @@ if __name__ == "__main__":
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
-    net = tflearn.layers.core.fully_connected(net, 2, activation="softmax",restore=False) # Don't restore this layer (train from scratch)
+    net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
 
     net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
-    dummyData = np.reshape(np.concatenate(kfoldData[:i] + kfoldData[i+1:], axis=0), [-1,34,34,34,2])
-    dummyLabels = np.reshape(np.concatenate(kfoldLabelsOH[:i] + kfoldLabelsOH[i+1:], axis=0), [-1, 2])
-    model.load("./models/blahblah")
-    model.fit(dummyData, dummyLabels, batch_size=5, n_epoch=150, show_metric=True) # In practice learning stops ~150 epochs.
+    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=150, show_metric=True) # In practice learning stops ~150 epochs.
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    model.save("./models/"+dt+"_3d-2channel-finetuned_"+str(i)+"-of-"+str(k-1)+".tflearn")
+    model.save("./models/"+dt+"_3d-2channel-fakedata_h5.tflearn")
 
     # Get sensitivity and specificity
     illTest = []
     healthTest = []
-    for index, item in enumerate(kfoldLabels[i]):
+    inLabels_test = inLabelsOH_test[:,1]
+    for index, item in enumerate(inLabels_test):
         if item == 1:
-            illTest.append(kfoldData[i][index])
+            illTest.append(inData_test[index])
         if item == 0:
-            healthTest.append(kfoldData[i][index])
+            healthTest.append(inData_test[index])
 
     healthLabel = np.tile([1,0], (len(healthTest), 1))
     illLabel = np.tile([0,1], (len(illTest), 1))
@@ -85,11 +77,12 @@ if __name__ == "__main__":
     spec = model.evaluate(np.array(illTest), illLabel)
 
     # Get roc curve data
-    predicted = np.array(model.predict(np.array(kfoldData[i])))
-    fpr, tpr, th = roc_curve(kfoldLabels[i], predicted[:,1])
-    auc = roc_auc_score(kfoldLabels[i], predicted[:,1])
+    predicted = np.array(model.predict(np.array(inData_test)))
+    fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
+    auc = roc_auc_score(inLabels_test, predicted[:,1])
 
-    savefileacc = "./logs/"+dt+"_3d-2channel-finetuned-acc_"+str(i)+"-of-"+str(k-1)+".log"
-    savefileroc = "./logs/"+dt+"_3d-2channel-finetuned-roc_"+str(i)+"-of-"+str(k-1)+".log"
+    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_h5.log"
+    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_h5.log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
+    h5f.close()
