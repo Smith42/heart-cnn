@@ -361,3 +361,7 @@
 * Getting better results with the fake data would probably correspond to better results in the finetuned CNN with real data.
 * Since we have an unlimited amount of fake data I should find a way to get it working without an OOM error.
 * I am rewriting the CNN to handle the data via HDF5.
+
+## 2017-08-08
+* HDF5 CNN is up and running. The tflearn.predict class is a bit of a pita as it loads all the input data into vram before usage.
+  I have reduced the input data to 500 ppts to counteract this but there is probably a smarter way to do it (feed_dicts?).

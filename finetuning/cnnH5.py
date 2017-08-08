@@ -78,10 +78,15 @@ if __name__ == "__main__":
     spec = model.evaluate(np.array(illTest), illLabel)
 
     # Get roc curve data
-    predicted = np.array(model.predict(np.array(inData_test)))
+    predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
+    for index in np.arange(1, inLabels_test.shape[0]):
+        predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
+    predicted = np.squeeze(predicted)
+
     fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
     auc = roc_auc_score(inLabels_test, predicted[:,1])
 
+    print(spec[0], sens[0], auc)
     savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_h5.log"
     savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_h5.log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
