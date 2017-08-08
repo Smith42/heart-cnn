@@ -15,11 +15,12 @@ import datetime
 # Import and preprocess data
 
 if __name__ == "__main__":
-    h5f = h5py.File("./data/twoThousand.h5", "r")
+    h5f = h5py.File("./data/twentyThousand.h5", "r")
+    h5f_test = h5py.File("./data/twoThousand.h5", "r")
     inData = h5f["inData"]
     inLabelsOH = h5f["inLabels"]
-    inData_test = h5f["inData_test"]
-    inLabelsOH_test = h5f["inLabels_test"]
+    inData_test = h5f_test["inData"]
+    inLabelsOH_test = h5f_test["inLabels"]
 
     # Neural net (two-channel)
     sess = tf.InteractiveSession()
@@ -86,3 +87,4 @@ if __name__ == "__main__":
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
     h5f.close()
+    h5f_test.close()

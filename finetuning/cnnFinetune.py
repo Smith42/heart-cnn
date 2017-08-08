@@ -18,7 +18,7 @@ if __name__ == "__main__":
     k = 5 # k folds
 
     inData = np.load("./data/shufData.npy")
-    inLabels = np.load("./data/shufLabs.npy")
+    inLabels = np.load("./data/shufLab.npy")
     inLabelsOH = np.eye(2)[inLabels.astype(int)] # One hot encode
 
     # k fold the data
