@@ -79,9 +79,8 @@ if __name__ == "__main__":
 
     # Get roc curve data
     predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
-    for index in np.arange(1, inLabels_test.shape[0]):
+    for j in np.arange(1, inLabels_test.shape[0]):
         predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
-    predicted = np.squeeze(predicted)
 
     fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
     auc = roc_auc_score(inLabels_test, predicted[:,1])

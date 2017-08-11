@@ -365,3 +365,13 @@
 ## 2017-08-08
 * HDF5 CNN is up and running. The tflearn.predict class is a bit of a pita as it loads all the input data into vram before usage.
   I have reduced the input data to 500 ppts to counteract this but there is probably a smarter way to do it (feed_dicts?).
+    - Fixed the issue by running each heartcube through tflearn.predict via a for loop. The HDF5 file then only fetches one heartcube at a time into ram.
+* Running cnnH5.py on the CNN used in 2017-07-28.
+
+## 2017-08-10
+* Running the CNN with 19000 samples gives a validation accuracy of ~0.8.
+* ROC curve:
+    - <img src="./figures/rocCurves/2017-08-10_10:04:00-CNNh5.png" alt="20000 data" style="width: 200px;"/>
+* The ROC curve for the real data is ok:
+    - <img src="./figures/rocCurves/2017-08-10_10:35:00-CNNh5-finetunedRealData.png" alt="Finetuned data" style="width: 200px;"/>
+* There isn't a lot of carryover between the sets. It would be better to train the CNN from scratch on real data. It might also be better to use some more realistic fake data.
