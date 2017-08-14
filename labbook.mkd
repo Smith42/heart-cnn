@@ -375,3 +375,7 @@
 * The ROC curve for the real data is ok:
     - <img src="./figures/rocCurves/2017-08-10_10:35:00-CNNh5-finetunedRealData.png" alt="Finetuned data" style="width: 200px;"/>
 * There isn't a lot of carryover between the sets. It would be better to train the CNN from scratch on real data. It might also be better to use some more realistic fake data.
+
+## 2017-08-14
+* Running the CNN on mixed, infarction, ischaemic, artefact, and healthy patients pairwise.
+* It takes ages putting the hearts into *.h5...
