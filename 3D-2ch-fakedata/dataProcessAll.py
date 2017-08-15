@@ -101,20 +101,20 @@ if __name__ == "__main__":
     normDat = np.moveaxis(normDat,1,-1)
 
     isName = "ischaemia"
-    isDat = importType(abName,1000)
-    isDat = np.moveaxis(abDat,1,-1)
+    isDat = importType(isName,1000)
+    isDat = np.moveaxis(isDat,1,-1)
 
     inName = "infarction"
-    inDat = importType(abName,1000)
-    inDat = np.moveaxis(abDat,1,-1)
+    inDat = importType(inName,1000)
+    inDat = np.moveaxis(inDat,1,-1)
 
     miName = "mixed"
-    miDat = importType(abName,1000)
-    miDat = np.moveaxis(abDat,1,-1)
+    miDat = importType(miName,1000)
+    miDat = np.moveaxis(miDat,1,-1)
 
     arName = "artefact"
-    arDat = importType(abName,1000)
-    arDat = np.moveaxis(abDat,1,-1)
+    arDat = importType(arName,1000)
+    arDat = np.moveaxis(arDat,1,-1)
 
     data = np.concatenate([normDat, isDat, inDat, miDat, arDat])
 

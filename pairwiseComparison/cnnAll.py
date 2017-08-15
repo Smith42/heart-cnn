@@ -15,8 +15,8 @@ import datetime
 # Import and preprocess data
 
 if __name__ == "__main__":
-    h5f = h5py.File("./data/twentyThousand.h5", "r")
-    h5f_test = h5py.File("./data/twoThousand.h5", "r")
+    h5f = h5py.File("./data/all.h5", "r")
+    h5f_test = h5py.File("./data/allTest.h5", "r")
     inData = h5f["inData"]
     inLabelsOH = h5f["inLabels"]
     inData_test = h5f_test["inData"]
@@ -52,43 +52,19 @@ if __name__ == "__main__":
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
-    net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
+    net = tflearn.layers.core.fully_connected(net, 4, activation="softmax")
 
     net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
     model = tflearn.DNN(net, tensorboard_verbose=0)
 
     # Train the model, leaving out the kfold not being used
-    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=20, show_metric=True)
+    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=60, show_metric=True, validation_set=0.1) # Need validation so I can see when learning stops
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    model.save("./models/"+dt+"_3d-2channel-fakedata_ischaemia.tflearn")
+    model.save("./models/"+dt+"_3d-2channel-fakedata-all.tflearn")
 
-    # Get sensitivity and specificity
-    illTest = []
-    healthTest = []
-    inLabels_test = inLabelsOH_test[:,1]
-    for index, item in enumerate(inLabels_test):
-        if item == 1:
-            illTest.append(inData_test[index])
-        if item == 0:
-            healthTest.append(inData_test[index])
+    acc = model.evaluate(inData_test, inLabelsOH_test, batch_size=100)
 
-    healthLabel = np.tile([1,0], (len(healthTest), 1))
-    illLabel = np.tile([0,1], (len(illTest), 1))
-    sens = model.evaluate(np.array(healthTest), healthLabel)
-    spec = model.evaluate(np.array(illTest), illLabel)
-
-    # Get roc curve data
-    predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
-    for j in np.arange(1, inLabels_test.shape[0]):
-        predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
-
-    fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
-    auc = roc_auc_score(inLabels_test, predicted[:,1])
-
-    print(spec[0], sens[0], auc)
-    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_ischaemia.log"
-    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_ischaemia.log"
-    np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
-    np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
+    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_all.log"
+    np.savetxt(savefileacc, acc[0], delimiter=",")
     h5f.close()
     h5f_test.close()
