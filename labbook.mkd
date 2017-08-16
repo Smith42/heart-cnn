@@ -383,5 +383,10 @@
 ## 2017-08-15
 * Here are the ROC curves for the pairwise data (20 epochs, 10000 ill/10000 healthy). The ROC curve should begin at ``[fpr,tpr] == [0,0]`` but I forgot to manually add that index.
     - <img src="./figures/rocCurves/2017-08-15_10:15:00-CNN-pairwise.png" alt="20000 data pairwise CNNs" style="width: 200px;"/>
-* I am going to run a CNN for categorising 10000 infarcted, ischaemic, mixed, artefact, and healthy hearts. I cannot use ROC curves for this because it is no longer binary, but I can get the overall accuracy, along with some other related ops.
+* I am going to run a CNN for categorising 10000 infarcted, ischaemic, mixed, artefact, and healthy hearts. I cannot use ROC curves for this because it is no longer binary, but I can get the overall accuracy, along with some other related ops. I think ~60 epochs will be enough. I will use validation to see where learning stops.
 * There is a problem with my install of mayavi, and the diagnosisCubes won't show any more. Idky...
+* cnnAll.py should take ~20 hours.
+
+## 2017-08-16
+* We get a validation and test accuracy of ~0.471, and a training accuracy of 0.99. I will turn on some regularisation to stop the overfitting.
+* I'll set the epochs to ~30 so that it doesn't take an age..
