@@ -389,4 +389,11 @@
 
 ## 2017-08-16
 * We get a validation and test accuracy of ~0.471, and a training accuracy of 0.99. I will turn on some regularisation to stop the overfitting.
+     - Accuracies for each cube type: Normal 0.583; Ischaemia 0.614; Infarction 0.298; Mixed 0.274; Artefact 0.583.
 * I'll set the epochs to ~30 so that it doesn't take an age..
+* Separating the healthy and categorising all the other cubes as ill would allow us to make an ROC cube.
+    - Written cnnAll with the new ROC/auc curve algorithm.
+* Regularisation atm is way too high. Changed the weighting to 0.0001.
+
+## 2017-08-18
+* The regularisation of 0.0001 has achieved a ~2% increase in accuracy. Although this might be within the margin of error.
