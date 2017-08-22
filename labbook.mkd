@@ -397,3 +397,10 @@
 
 ## 2017-08-18
 * The regularisation of 0.0001 has achieved a ~2% increase in accuracy. Although this might be within the margin of error.
+
+## 2017-08-21
+* There are a load of bugs in the ROC generation in cnnAll.py. Fixing...
+* I think I have fixed all the bugs now. Running the ROC generator.
+
+## 2017-08-21
+* We are getting an AUC score of ~0.81. I will run the cnnAll again and see if we can finally get an ROC curve from this.

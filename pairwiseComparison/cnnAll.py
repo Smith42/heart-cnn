@@ -12,6 +12,14 @@ import scipy
 import h5py
 import datetime
 
+def softmax(x):
+    """
+    Compute softmax for x.
+    https://stackoverflow.com/questions/34968722/softmax-function-python
+    """
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum()
+
 # Import and preprocess data
 
 if __name__ == "__main__":
@@ -63,7 +71,7 @@ if __name__ == "__main__":
     model.save("./models/"+dt+"_3d-2channel-fakedata-all.tflearn")
 
     # Retrieve indices of the different cubes and get the accuracies of each type
-    inLabels_test = np.argwhere(inLabelsOH_test == 1)[:,1]
+    inLabels_test = np.argwhere(np.array(inLabelsOH_test) == 1)[:,1]
     mnorm = inLabels_test == 0
     accNorm = model.evaluate(inData_test[mnorm,...], inLabelsOH_test[mnorm,...], batch_size=100)
     mIs = inLabels_test == 1
@@ -71,35 +79,46 @@ if __name__ == "__main__":
     mIn = inLabels_test == 2
     accIn = model.evaluate(inData_test[mIn,...], inLabelsOH_test[mIn,...], batch_size=100)
     mMi = inLabels_test == 3
-    accMi = model.evaluate(inData_test[mMi,...], inLabelsOH_test[mMi], batch_size=100)
+    accMi = model.evaluate(inData_test[mMi,...], inLabelsOH_test[mMi,...], batch_size=100)
     mAr = inLabels_test == 4
-    accAr = model.evaluate(inData_test[mAr], inLabelsOH_test[mAr], batch_size=100)
+    accAr = model.evaluate(inData_test[mAr,...], inLabelsOH_test[mAr,...], batch_size=100)
 
     # Get an ROC curve by lumping all of the unhealthy cubes together as ill
     predictednorm = model.predict(inData_test[mnorm,...][0][np.newaxis,...]) # Dirty hack to save memory
     for j in np.arange(1, inLabels_test[mnorm,...].shape[0]):
-        predictednorm = np.append(predictednorm, model.predict(inData_test[mnorm,...][j][np.newaxis,...]), axis=0)
+        predTemp = model.predict(inData_test[mnorm,...][j][np.newaxis,...])
+        print(j, predTemp, 0)
+        predictednorm = np.append(predictednorm, predTemp, axis=0)
 
     predictedill = model.predict(inData_test[~mnorm,...][0][np.newaxis])
     for j in np.arange(1, inLabels_test[mnorm,...].shape[0]): # Have same amount of normal and abnormal data
+        predTemp = model.predict(inData_test[~mnorm,...][j][np.newaxis,...])
+        print(j, predTemp, 1)
         predictedill = np.append(predictedill, model.predict(inData_test[~mnorm,...][j][np.newaxis,...]), axis=0)
 
     # Mask array so that only healthy and wanted indices are shown. Normalise to binary.
     mill = inLabelsOH_test[~mnorm,...] == 1
     mill = mill[:inLabels_test[mnorm,...].shape[0]]
     mill[:,0] = True
-    predBinaryIll = sklearn.preprocessing.normalize(predictedill[mill], norm="max", axis=1)
+
+    predBinaryIll = []
+    for row in np.reshape(predictedill[mill],[-1,2]):
+        predBinaryIll.append(softmax(row))
+    predBinaryIll = np.array(predBinaryIll)
 
     # Mask array so that healthy and next largest indices are shown. If an index is larger than healthy use that and healthy. Normalise to binary.
     mhealth = inLabelsOH_test[mnorm,...] == 1
-    sortedNormPred = np.argsort(predictednorm, axis==1)[::-1]
-    for i in np.shape(sortedNormPred)[0]:
-        if sortedNormPred[0] == 0:
-            mhealth[i,sortedNormPred[1]] = True
+    sortedNormPred = np.argsort(predictednorm, axis=1)[::-1]
+    for i in np.arange(np.shape(sortedNormPred)[0]):
+        if sortedNormPred[i,0] == 0:
+            mhealth[i,sortedNormPred[i,1]] = True
         else:
-            mhealth[i,sortedNormPred[0]] = True
+            mhealth[i,sortedNormPred[i,0]] = True
 
-    predBinaryHealth = sklearn.preprocessing.normalize(predictednorm[mhealth], norm="max", axis=1)
+    predBinaryHealth = []
+    for row in np.reshape(predictednorm[mhealth],[-1,2]):
+         predBinaryHealth.append(softmax(row))
+    predBinaryHealth = np.array(predBinaryHealth)
 
     predicted = np.concatenate((predBinaryIll,predBinaryHealth))
     binLabels = np.concatenate((np.ones(inLabels_test[mnorm,...].shape[0]),np.zeros(inLabels_test[mnorm,...].shape[0])))
@@ -108,9 +127,10 @@ if __name__ == "__main__":
 
     acc = model.evaluate(inData_test, inLabelsOH_test, batch_size=100)
     print(accNorm,accIs,accIn,accMi,accAr,acc)
+    print(auc)
     savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_all.log"
     savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-acc_all.log"
-    np.savetxt(savefileacc, (accNorm,accIs,accIn,accMi,accAr,acc,auc), delimiter=",")
+    np.savetxt(savefileacc, (accNorm[0],accIs[0],accIn[0],accMi[0],accAr[0],acc[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
     h5f.close()
     h5f_test.close()
