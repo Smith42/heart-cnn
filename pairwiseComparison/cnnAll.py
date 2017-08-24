@@ -48,15 +48,20 @@ if __name__ == "__main__":
 
     # Third layer:
     net = tflearn.layers.conv.conv_3d(net, 128, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-07-28
+    net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2]) # This was added for CNN 2017-08-24
+
+    #Fourth layer:
+    net = tflearn.layers.conv.conv_3d(net, 256, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-08-24
+    net = tflearn.layers.core.fully_connected(net, 4096, activation="leaky_relu", regularizer="L2", weight_decay=0.0001) # This was added for CNN 2017-08-24
 
     # Fully connected layers
-    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu", regularizer="L2", weight_decay=0.01)
+    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu", regularizer="L2", weight_decay=0.01)
+    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu", regularizer="L2", weight_decay=0.01)
+    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
@@ -84,17 +89,19 @@ if __name__ == "__main__":
     accAr = model.evaluate(inData_test[mAr,...], inLabelsOH_test[mAr,...], batch_size=100)
 
     # Get an ROC curve by lumping all of the unhealthy cubes together as ill
-    predictednorm = model.predict(inData_test[mnorm,...][0][np.newaxis,...]) # Dirty hack to save memory
+    maskedNorm = inData_test[mnorm,...]
+    predictednorm = model.predict(maskedNorm[0][np.newaxis,...]) # Dirty hack to save memory
     for j in np.arange(1, 500):
-        predTemp = model.predict(inData_test[mnorm,...][j][np.newaxis,...])
+        predTemp = model.predict(maskedNorm[j][np.newaxis,...])
         print(j, predTemp, 0)
         predictednorm = np.append(predictednorm, predTemp, axis=0)
 
-    predictedill = model.predict(inData_test[~mnorm,...][0][np.newaxis])
+    maskedIll = inData_test[~mnorm,...]
+    predictedill = model.predict(maskedIll[0][np.newaxis])
     for j in np.arange(1, 500): # Have same amount of normal and abnormal data
-        predTemp = model.predict(inData_test[~mnorm,...][j][np.newaxis,...])
+        predTemp = model.predict(maskedIll[j][np.newaxis,...])
         print(j, predTemp, 1)
-        predictedill = np.append(predictedill, model.predict(inData_test[~mnorm,...][j][np.newaxis,...]), axis=0)
+        predictedill = np.append(predictedill, predTemp, axis=0)
 
     # Mask array so that only healthy and wanted indices are shown. Normalise to softmax.
     mill = inLabelsOH_test[~mnorm,...] == 1
@@ -129,7 +136,7 @@ if __name__ == "__main__":
     print(accNorm,accIs,accIn,accMi,accAr,acc)
     print(auc)
     savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_all.log"
-    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-acc_all.log"
+    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_all.log"
     np.savetxt(savefileacc, (accNorm[0],accIs[0],accIn[0],accMi[0],accAr[0],acc[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
     h5f.close()

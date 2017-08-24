@@ -407,4 +407,12 @@
 * Passing each heartcube through tf.predict is not very efficient... If this becomes an issue I can try passing slices instead.
 
 ## 2017-08-23
-* Looks like the supercomputer is having trouble processing the code. Splitting the CNN training and ROC/AUC evaluation may help.
+* Looks like the supercomputer is having trouble processing the code. Splitting the CNN training and ROC/AUC evaluation into 
+  separate ``*.pys``, and linking them with a shell script may help.
+* I can probably remove all the cruft and leave the diagnosis cube, and ``cnnAll.py`` since cnnAll implements the 3D CNN to all 
+  types of heart, and has a solid evaluation output (ROC, acc for each illness, etc.).
+  
+## 2017-08-24
+* The computer timed out... :(
+* I think the GPU is slowing because it is nearly OOM... Maybe split the diagnostics and model building?
+* I could probably also generate ROC curves for each ill/healthy pair, but this would take a long time on the computer we have.

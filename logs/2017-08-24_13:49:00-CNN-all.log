@@ -1,0 +1,7 @@
+Normal: [ 0.63399998]
+Ischaemic: [ 0.54899997]
+Infarcted: [ 0.28299999]
+Mixed: [ 0.38099999]
+Artefact: [ 0.60499997]
+Overall accuracy: [ 0.49039998]
+ROC AUC: [ 0.811082]
