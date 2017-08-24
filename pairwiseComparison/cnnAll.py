@@ -85,18 +85,18 @@ if __name__ == "__main__":
 
     # Get an ROC curve by lumping all of the unhealthy cubes together as ill
     predictednorm = model.predict(inData_test[mnorm,...][0][np.newaxis,...]) # Dirty hack to save memory
-    for j in np.arange(1, inLabels_test[mnorm,...].shape[0]):
+    for j in np.arange(1, 500):
         predTemp = model.predict(inData_test[mnorm,...][j][np.newaxis,...])
         print(j, predTemp, 0)
         predictednorm = np.append(predictednorm, predTemp, axis=0)
 
     predictedill = model.predict(inData_test[~mnorm,...][0][np.newaxis])
-    for j in np.arange(1, inLabels_test[mnorm,...].shape[0]): # Have same amount of normal and abnormal data
+    for j in np.arange(1, 500): # Have same amount of normal and abnormal data
         predTemp = model.predict(inData_test[~mnorm,...][j][np.newaxis,...])
         print(j, predTemp, 1)
         predictedill = np.append(predictedill, model.predict(inData_test[~mnorm,...][j][np.newaxis,...]), axis=0)
 
-    # Mask array so that only healthy and wanted indices are shown. Normalise to binary.
+    # Mask array so that only healthy and wanted indices are shown. Normalise to softmax.
     mill = inLabelsOH_test[~mnorm,...] == 1
     mill = mill[:inLabels_test[mnorm,...].shape[0]]
     mill[:,0] = True
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         predBinaryIll.append(softmax(row))
     predBinaryIll = np.array(predBinaryIll)
 
-    # Mask array so that healthy and next largest indices are shown. If an index is larger than healthy use that and healthy. Normalise to binary.
+    # Mask array so that healthy and next largest indices are shown. If an index is larger than healthy use that and healthy. Normalise to softmax.
     mhealth = inLabelsOH_test[mnorm,...] == 1
     sortedNormPred = np.argsort(predictednorm, axis=1)[::-1]
     for i in np.arange(np.shape(sortedNormPred)[0]):

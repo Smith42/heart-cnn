@@ -402,5 +402,9 @@
 * There are a load of bugs in the ROC generation in cnnAll.py. Fixing...
 * I think I have fixed all the bugs now. Running the ROC generator.
 
-## 2017-08-21
+## 2017-08-22
 * We are getting an AUC score of ~0.81. I will run the cnnAll again and see if we can finally get an ROC curve from this.
+* Passing each heartcube through tf.predict is not very efficient... If this becomes an issue I can try passing slices instead.
+
+## 2017-08-23
+* Looks like the supercomputer is having trouble processing the code. Splitting the CNN training and ROC/AUC evaluation may help.
