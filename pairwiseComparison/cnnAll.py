@@ -52,16 +52,16 @@ if __name__ == "__main__":
 
     #Fourth layer:
     net = tflearn.layers.conv.conv_3d(net, 256, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-08-24
-    net = tflearn.layers.core.fully_connected(net, 4096, activation="leaky_relu", regularizer="L2", weight_decay=0.0001) # This was added for CNN 2017-08-24
+    net = tflearn.layers.core.fully_connected(net, 4096, activation="leaky_relu")#, regularizer="L2", weight_decay=0.0001) # This was added for CNN 2017-08-24
 
     # Fully connected layers
-    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
+    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu")#, regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
+    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu")#, regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
-    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu", regularizer="L2", weight_decay=0.0001)
+    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu")#, regularizer="L2", weight_decay=0.0001)
     #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
 
     # Output layer:
@@ -91,14 +91,14 @@ if __name__ == "__main__":
     # Get an ROC curve by lumping all of the unhealthy cubes together as ill
     maskedNorm = inData_test[mnorm,...]
     predictednorm = model.predict(maskedNorm[0][np.newaxis,...]) # Dirty hack to save memory
-    for j in np.arange(1, 500):
+    for j in np.arange(1, maskedNorm.shape[0]):
         predTemp = model.predict(maskedNorm[j][np.newaxis,...])
         print(j, predTemp, 0)
         predictednorm = np.append(predictednorm, predTemp, axis=0)
 
     maskedIll = inData_test[~mnorm,...]
     predictedill = model.predict(maskedIll[0][np.newaxis])
-    for j in np.arange(1, 500): # Have same amount of normal and abnormal data
+    for j in np.arange(1, maskedNorm.shape[0]): # Have same amount of normal and abnormal data
         predTemp = model.predict(maskedIll[j][np.newaxis,...])
         print(j, predTemp, 1)
         predictedill = np.append(predictedill, predTemp, axis=0)
