@@ -416,3 +416,20 @@
 * The computer timed out... :(
 * I think the GPU is slowing because it is nearly OOM... Maybe split the diagnostics and model building?
 * I could probably also generate ROC curves for each ill/healthy pair, but this would take a long time on the computer we have.
+
+## 2017-08-28 
+* Fixed the slowing problem. The masking of the inData_test array was performed for each prediction, meaning each masked array was
+  stored in memory. Moving the mask outside the for loop fixed this.
+* I've changed the weight decay to 0.00001 on all FC layers. This might fix the overfitting (and low performance) problem with cnnAll.py.
+
+## 2017-08-29
+* The overfitting is still a problem... I have removed one of the FC layers, and upped the regularisation on the remaining layers.
+* Latest results 
+    Normal: [ 0.452]
+    Ischaemic: [ 0.50599999]
+    Infarcted: [ 0.37099999]
+    Mixed: [ 0.47299998]
+    Artefact: [ 0.51699997]
+    Overall accuracy: [ 0.46379998]
+    ROC AUC: [ 0.826947]
+    - <img src="./figures/rocCurves/2017-08-31_09:46:00-CNN-all.png" alt="ROC for ill/healthy matchings" style="width: 200px;"/>
