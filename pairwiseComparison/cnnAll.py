@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     # Neural net (two-channel)
     sess = tf.InteractiveSession()
-    model = getCNN()
+    model = getCNN() # don't know if this works. Will need to test when GPU is free
 
     # Train the model
     model.fit(inData, inLabelsOH, batch_size=100, n_epoch=30, show_metric=True, validation_set=0.1) # Need validation so I can see when learning stops

@@ -4,7 +4,6 @@ matplotlib.use("Agg") # the code headless.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -78,16 +77,12 @@ def normalise(inData):
     return normalisedData
 
 if __name__ == "__main__":
-    kfold = 1 # How many kfolds?
-    i = int(sys.argv[1]) # i is current kfold
-
     # inData are heartcubes with same shape as those used in the CNN
     ppt = 20
     inData = np.load("/tmp/inData.npy")[ppt]
     inData = inData[np.newaxis,...]
     inLabels= np.load("/tmp/inLabels.npy")[ppt]
 
-    models = ["model0", "model1","model2"]
     model = modelLoad(models[i])
 
     # Does the CNN predict correctly in the first place?
@@ -112,6 +107,5 @@ if __name__ == "__main__":
 
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
 
-    if i == 0:
-        np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0]) # We only need to save the heartcube once...
+    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0]) # We only need to save the heartcube once...
     np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_lossCube-"+str(i)+"-of-"+str(kfold-1), lossCube)
