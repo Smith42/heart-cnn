@@ -8,6 +8,7 @@ import tflearn
 import sklearn
 from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
+from CNN import getCNN
 import scipy
 import h5py
 import datetime
@@ -15,8 +16,8 @@ import datetime
 # Import and preprocess data
 
 if __name__ == "__main__":
-    h5f = h5py.File("./data/mixed-healthy.h5", "r")
-    h5f_test = h5py.File("./data/mixed-health-test.h5", "r")
+    h5f = h5py.File("./data/artefact-healthy.h5", "r")
+    h5f_test = h5py.File("./data/artefact-healthy-test.h5", "r")
     inData = h5f["inData"]
     inLabelsOH = h5f["inLabels"]
     inData_test = h5f_test["inData"]
@@ -24,43 +25,12 @@ if __name__ == "__main__":
 
     # Neural net (two-channel)
     sess = tf.InteractiveSession()
-    tf.reset_default_graph()
-    tflearn.initializations.normal()
-
-    # Input layer:
-    net = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
-
-    # First layer:
-    net = tflearn.layers.conv.conv_3d(net, 32, [10,10,10],  activation="leaky_relu")
-    net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
-
-    # Second layer:
-    net = tflearn.layers.conv.conv_3d(net, 64, [5,5,5],  activation="leaky_relu")
-    net = tflearn.layers.conv.max_pool_3d(net, [2,2,2], strides=[2,2,2])
-
-    # Third layer:
-    net = tflearn.layers.conv.conv_3d(net, 128, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-07-28
-
-    # Fully connected layers
-    net = tflearn.layers.core.fully_connected(net, 2048, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
-    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
-
-    net = tflearn.layers.core.fully_connected(net, 1024, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
-    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
-
-    net = tflearn.layers.core.fully_connected(net, 512, activation="leaky_relu") # regularizer="L2", weight_decay=0.01,
-    #net = tflearn.layers.core.dropout(net, keep_prob=0.5)
-
-    # Output layer:
-    net = tflearn.layers.core.fully_connected(net, 2, activation="softmax")
-
-    net = tflearn.layers.estimator.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
-    model = tflearn.DNN(net, tensorboard_verbose=0)
+    model = getCNN(2) # 2 classes: healthy, artefact
 
     # Train the model, leaving out the kfold not being used
     model.fit(inData, inLabelsOH, batch_size=100, n_epoch=20, show_metric=True)
     dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    model.save("./models/"+dt+"_3d-2channel-fakedata_mixed.tflearn")
+    model.save("./models/"+dt+"_3d-2channel-fakedata_artefact.tflearn")
 
     # Get sensitivity and specificity
     illTest = []
@@ -86,8 +56,8 @@ if __name__ == "__main__":
     auc = roc_auc_score(inLabels_test, predicted[:,1])
 
     print(spec[0], sens[0], auc)
-    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_mixed.log"
-    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_mixed.log"
+    savefileacc = "./logs/"+dt+"_3d-2channel-fakedata-acc_artefact.log"
+    savefileroc = "./logs/"+dt+"_3d-2channel-fakedata-roc_artefact.log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
     h5f.close()
