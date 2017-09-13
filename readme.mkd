@@ -13,4 +13,4 @@ Please see the full report for a more detailed explanation of the algorithm.
 Usage
 =====
 
-All CNN training scripts are stored in the CNN directory. The master CNN is named CNN.py and is in the root directory. The training scripts all reference this CNN. After the training scripts generate output, the ROC curves and other statistical data can be generated via postproc.ipynb. The lossCube directory holds the script for visualising diagnosticity.
+All CNN training scripts are stored in the CNN directory. The master CNN is named CNN.py and is also in the CNN directory. The training scripts all reference this CNN. After the training scripts generate output, the ROC curves and other statistical data can be generated via postproc.ipynb. The lossCube directory holds the script for visualising diagnosticity.
