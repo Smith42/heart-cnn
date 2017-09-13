@@ -10,6 +10,9 @@ from sklearn.metrics import roc_curve, roc_auc_score
 import scipy, scipy.ndimage
 
 # Import and preprocess data
+# If the heart image stored dir has changed:
+#   * Change the directory and regex of the heart images to import in importType.
+#   * Change the number of images to import.
 
 def importHeartData(calmFile, stressFile, resize):
     """
@@ -118,8 +121,6 @@ if __name__ == "__main__":
 
     # Save data as HDF5 object:
     h5f = h5py.File("./data/twoThousand.h5", "w")
-    h5f.create_dataset("inData", data=shufData[:1900])
-    h5f.create_dataset("inLabels", data=shufLabOH[:1900])
-    h5f.create_dataset("inData_test", data=shufData[1900:])
-    h5f.create_dataset("inLabels_test", data=shufLabOH[1900:])
+    h5f.create_dataset("inData", data=shufData)
+    h5f.create_dataset("inLabels", data=shufLabOH)
     h5f.close()

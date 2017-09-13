@@ -10,6 +10,9 @@ from sklearn.metrics import roc_curve, roc_auc_score
 import scipy, scipy.ndimage
 
 # Import and preprocess data
+# If the heart image stored dir has changed:
+#   * Change the directory and regex of the heart images to import in importType.
+#   * Change the number of images to import.
 
 def importHeartData(calmFile, stressFile, resize):
     """
