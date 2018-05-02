@@ -433,3 +433,14 @@
     Overall accuracy: [ 0.46379998]
     ROC AUC: [ 0.826947]
     - <img src="./figures/rocCurves/2017-08-31_09:46:00-CNN-all.png" alt="ROC for ill/healthy matchings" style="width: 200px;"/>
+
+## 2018-05-02
+* I have changed the sim generation software so that it looks more like the real data.
+* Generated 10,000 healthies and 10,000 infarctions (in infarction-healthy.h5 and infarction-healthy-test.h5).
+* Testing cnnH5.py on healthy/infarction sims:
+    Specificity: 0.835
+    Sensitivity: 0.859
+    ROC AUC: 0.923
+* Writing a new postproc so that we can easily get the ROC AUC, and other values out.
+* Rerunning on latest CNN...
+* Will finetune with real scans when done.
