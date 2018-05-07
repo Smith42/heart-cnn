@@ -77,7 +77,7 @@ if __name__ == "__main__":
         ssa = []
         for path in args.acc:
             ssa.append(np.loadtxt(path.name, delimiter=","))
-            ssa = np.transpose(np.array(ssa))
+        ssa = np.transpose(np.array(ssa))
         strOut = str("Specificity: "+str(ssa[0])+"\nAvg: "+str(np.mean(ssa[0]))+"\nSensitivity: "+str(ssa[1])+"\nAvg: "+str(np.mean(ssa[1]))+"\nROC AUC: "+str(ssa[2])+"\nAvg: "+str(np.mean(ssa[2])))
 
         if args.log:
