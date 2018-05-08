@@ -712,12 +712,24 @@
 - Writing up a python visualisation module now.
 
 ** 2018-05-07
-
 - visualise.py is working for cartesian and polar coord systems. 
   I need to figure out a way to get the diagnosis cube into it for the folded visualisation.
   This should be easy enough...
-- Losscube needs a BIG rework... it barely works at all. Now that we have working visualisations, we should
+- Losscube needs a BIG rework... it barely works at all. Now that we have working 2d visualisations, we should
   try and get the losscube up and running again with the new vis-es.
+- We are getting something... Will play around with it more tomorrow.
+[[./figures/visualisations/1525726948.409029-cartesian.png][Visualisation of losscube.]]
 
-** TODO 2d visualisations (including "where").
+** 2018-05-08
+- Losscube overlay for visualisation is working well now:
+[[./figures/visualisations/1525810383-polar.png]]
+[[./figures/visualisations/1525810383-cartesian.png]]
+[[./figures/visualisations/1525810383-unfolded.png]]
+- There appears to be a bug in the lossCube code, or the CNN is not looking at all where we expected it too...
+[[./figures/visualisations/1525810428-polar.png]]
+[[./figures/visualisations/1525810428-cartesian.png]]
+[[./figures/visualisations/1525810428-unfolded.png]]
+- I will try and fix this tomorrow.
+
+** TODO Fix and streamline lossCube code.
 ** TODO Start GAN.

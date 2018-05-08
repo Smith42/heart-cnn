@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 import argparse
 import imageio
 import astropy.io.fits as pyfits, dicom
@@ -47,7 +49,7 @@ def normalise(inData):
 
 ## CARTESIAN VISUALISATION FUNCTIONS
 
-def brute_force_plot(heart_array, save_to, log):
+def brute_force_plot(heart_array, save_to, log, diagnostic_data=None):
     """
     Saves reshaped SPECT scan, with rows showing the scan axes.
     """
@@ -57,27 +59,44 @@ def brute_force_plot(heart_array, save_to, log):
 
     fig.tight_layout()
 
-    ax[0].imshow(heart_array.reshape(heart_array.shape[0], -1))
+    ax[0].imshow(heart_array.reshape(heart_array.shape[0], -1), cmap="gray")
     ax[0].axis("off")
     ar_z = np.swapaxes(heart_array, 1, 2)
-    ax[1].imshow(ar_z.reshape(ar_z.shape[0] ,-1))
+    ax[1].imshow(ar_z.reshape(ar_z.shape[0] ,-1), cmap="gray")
     ax[1].axis("off")
-    ax[2].imshow(heart_array.reshape(-1, heart_array.shape[2]).T)
+    ax[2].imshow(heart_array.reshape(-1, heart_array.shape[2]).T, cmap="gray")
     ax[2].axis("off")
+
+    if diagnostic_data is not None:
+        # Make a new colormap with variable alpha
+        color = mpl.colors.colorConverter.to_rgba('red')
+        comap = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',[color,color],256)
+        comap._init() # create the _lut array, with rgba values
+        # create alpha array and fill the colormap with them.
+        alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.6) - 0.6 # a relu-like distribution with cut off at one third the maximum value
+        comap._lut[:,-1] = alphas
+
+        ax[0].imshow(diagnostic_data.reshape(diagnostic_data.shape[0], -1), cmap=comap)
+        ar_z = np.swapaxes(diagnostic_data, 1, 2)
+        ax[1].imshow(ar_z.reshape(diagnostic_data.shape[0] ,-1), cmap=comap)
+        ax[2].imshow(diagnostic_data.reshape(-1, diagnostic_data.shape[2]).T, cmap=comap)
 
     fig.subplots_adjust(top=0.96)
 
     if log:
-        dt = str(time.time())
         plt.savefig(save_to)
     else:
         plt.show()
 
-def unfolded_artefact_plot(heart_array, artefact_site, save_to, log):
-    # This will need reworking when I figure out the artefact overlay.
+def unfolded_artefact_plot(heart_array, diagnostic_data, save_to, log):
     """
-    Plot heart_array at artefact_site.
+    Plot heart_array at max value in diagnostic data.
     """
+    # Might be a bit naive assuming that the sites are at the max point of the diagnostic data...
+    # There is probably a better way of going about this...
+    x,y,z = np.unravel_index(np.argmax(diagnostic_data), np.shape(diagnostic_data))
+    artefact_site = [x,y,z]
+
     fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True, figsize=[10,10])
 
     fig.suptitle("Unfolded SPECT scan at simulated artefact site, "+str(artefact_site), size=16)
@@ -85,21 +104,21 @@ def unfolded_artefact_plot(heart_array, artefact_site, save_to, log):
 
     ax[0,1].axis("off")
 
-    ax[0,0].imshow(heart_array[artefact_site[0]])
+    ax[0,0].imshow(heart_array[artefact_site[0]], cmap="gray")
     ax[0,0].axhline(y=artefact_site[1], linewidth=2, color='red')
     ax[0,0].axvline(x=artefact_site[2], linewidth=2, color='red')
     at = AnchoredText("x = "+str(artefact_site[0]), prop=dict(size=8), frameon=True, loc=4)
     at.patch.set_boxstyle("square")
     ax[0,0].add_artist(at)
 
-    ax[1,0].imshow(heart_array[:,artefact_site[1]])
+    ax[1,0].imshow(heart_array[:,artefact_site[1]], cmap="gray")
     ax[1,0].axhline(y=artefact_site[0], linewidth=2, color='red')
     ax[1,0].axvline(x=artefact_site[2], linewidth=2, color='red')
     at = AnchoredText("y = "+str(artefact_site[1]), prop=dict(size=8), frameon=True, loc=4)
     at.patch.set_boxstyle("square")
     ax[1,0].add_artist(at)
 
-    ax[1,1].imshow(heart_array[:,:,artefact_site[2]])
+    ax[1,1].imshow(heart_array[:,:,artefact_site[2]], cmap="gray")
     ax[1,1].axhline(y=artefact_site[0], linewidth=2, color='red')
     ax[1,1].axvline(x=artefact_site[1], linewidth=2, color='red')
     at = AnchoredText("z = "+str(artefact_site[2]), prop=dict(size=8), frameon=True, loc=4)
@@ -137,6 +156,14 @@ def cart2pol(x, y):
     rho = np.sqrt(x**2 + y**2)
     phi = np.arctan2(y, x)
     return(rho, phi)
+
+def pol2cart(rho, phi):
+    """
+    Convert polar to cartesian
+    """
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
+    return(x, y)
 
 def gen_doughnut_mask(inData, thresh=0.55):
     """
@@ -177,7 +204,7 @@ def gen_doughnut_mask(inData, thresh=0.55):
 
     return np.array(doughnut_mask), centrepoints
 
-def polar_plot(inData, save_to, log):
+def polar_plot(inData, save_to, log, diagnostic_data=None):
     """
     Generate polar plot for inData.
     """
@@ -209,11 +236,25 @@ def polar_plot(inData, save_to, log):
     r = np.linspace(0, np.max(rhos), 300)
     grid_r, grid_theta = np.meshgrid(r, theta)
     data = griddata(points, values, (grid_r, grid_theta), method='cubic', fill_value=0)
+    if diagnostic_data is not None:
+        diag_values = diagnostic_data[doughnut_mask]
+        diag_data = griddata(points, diag_values, (grid_r, grid_theta), method='cubic', fill_value=0)
 
     fig = plt.figure(figsize=(10,10))
     ax = plt.axes(projection="polar")
+
     ax.set_title("Polar plot")
-    ax.pcolormesh(theta,r,data.T)
+    ax.pcolormesh(theta,r,data.T,cmap="gray")
+    if diagnostic_data is not None:
+        # Make a new colormap with variable alpha
+        color = mpl.colors.colorConverter.to_rgba('red')
+        comap = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',[color,color],256)
+        comap._init() # create the _lut array, with rgba values
+        # create alpha array and fill the colormap with them.
+        alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.6) - 0.6 # a relu-like distribution with cut off at half the maximum value
+        comap._lut[:,-1] = alphas
+
+        ax.pcolormesh(theta,r,diag_data.T,cmap=comap)
 
     if log:
         plt.savefig(save_to)
@@ -232,6 +273,7 @@ if __name__ == "__main__":
     parser.set_defaults(cartesian=False, unfolded=False, polar=False, log=False)
 
     args = parser.parse_args()
+    dt = str(int(time.time()))
 
     f, file_extension = os.path.splitext(args.file_path.name)
     if file_extension == ".fits":
@@ -240,14 +282,13 @@ if __name__ == "__main__":
         raw_array = dicom.read_file(args.file_path.name).pixel_array
     elif file_extension == ".npy":
         raw_array = np.load(args.file_path.name)#[...,1]
-        print(raw_array.shape)
+        #print(raw_array.shape)
     else:
         exit("Unknown file name (is the extension '.fits', '.npy', or '.dcm'?)")
 
     proc_array = crop_heart(raw_array)
 
     if args.diagnostic_file_path is None:
-        dt = str(time.time())
         if args.cartesian:
             save_to = "./figures/visualisations/"+dt+"-cartesian.png"
             brute_force_plot(proc_array, save_to, args.log)
@@ -257,7 +298,7 @@ if __name__ == "__main__":
             save_to = "./figures/visualisations/"+dt+"-polar.png"
             polar_plot(proc_array, save_to, args.log)
 
-"""
+
     else:
         df, d_file_extension = os.path.splitext(args.diagnostic_file_path.name)
 
@@ -274,12 +315,11 @@ if __name__ == "__main__":
 
         if args.cartesian:
             save_to = "./figures/visualisations/"+dt+"-cartesian.png"
-            brute_force_plot(proc_array, save_to, args.log)
+            brute_force_plot(proc_array, save_to, args.log, diagnostic_data=d_proc_array)
         if args.unfolded:
             # This is not ready
-            save_to = "./figures/visualisations/"+dt+"-polar.png"
-            unfolded_artefact_plot(proc_array, artefact_site, save_to, args.log)
+            save_to = "./figures/visualisations/"+dt+"-unfolded.png"
+            unfolded_artefact_plot(proc_array, d_proc_array, save_to, args.log)
         if args.polar:
             save_to = "./figures/visualisations/"+dt+"-polar.png"
-            polar_plot(proc_array, save_to, args.log)
-"""
+            polar_plot(proc_array, save_to, args.log, diagnostic_data=d_proc_array)
