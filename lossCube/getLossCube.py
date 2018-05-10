@@ -11,7 +11,8 @@ import scipy
 import sys
 import h5py
 from CNN import getCNN
-import datetime, time
+import argparse
+import time
 import tensorflow as tf
 import tflearn
 
@@ -29,6 +30,24 @@ def getLoss(inData, inLabel, maskWidth, j, k, l):
     loss = abs(predicted[:,1]-inLabel) # Simple loss function so we can see how close we are to being right
     return loss
 
+def getLossCube(inData, inLabel, maskWidth):
+    """
+    Apply getLoss for all indices in the heartCube.
+    """
+    lossCube = np.zeros(inData.shape[1:4])
+
+    for j in np.arange(inData.shape[1] - maskWidth + 1):
+        for k in np.arange(inData.shape[2] - maskWidth + 1):
+            for l in np.arange(inData.shape[3] - maskWidth + 1):
+                loss = getLoss(inData, inLabel, maskWidth, j, k, l)
+                lossCube[j+maskWidth//2,k+maskWidth//2,l+maskWidth//2] = loss
+                print("{:03d} {:03d} {:03d} : {:.3f}".format(j+maskWidth//2,k+maskWidth//2,l+maskWidth//2,loss))
+
+    return normalise(lossCube)
+
+def getGradCam(inData, model):
+
+
 def normalise(inData):
     """
     Normalise 3D array.
@@ -42,29 +61,54 @@ if __name__ == "__main__":
     # inData are heartcubes with same shape as those used in the CNN
     # So far this has only been implemented for healthy/ill pairs. It should be easy enough to generalise it to n classes though.
     # Generalisation to n classes would require grouping of healthy and ill diagnoses as in cnnAll.py, or a rethink of the current loss function.
-    ppt = 20
-    h5f = h5py.File("./data/twoThousand.h5", "r")
+
+    # Argument parsing
+    parser = argparse.ArgumentParser("Generate losscube for SPECT scan files.")
+    parser.add_argument("-o", "--occlusion_map", help="Use occlusion mapping for generation of the loss cube.", dest="occlusion_map", action="store_true")
+    parser.add_argument("-g", "--grad_cam", help="Use grad cam for generation of the loss cube.", dest="grad_cam", action="store_true")
+    parser.add_argument("-w", "--mask_width", help="[n,n,n] mask to be used in the generation of the occlusion losscube.", type=int, default=4)
+    parser.add_argument("-p", "--participant", help="Generate the losscube for this participant. If not given, a random ppt will be chosen.", type=int)
+    parser.add_argument("-f", "--file_path", help="File path for input .h5 file.", type=argparse.FileType('r'), required=True)
+    parser.add_argument("-m", "--model_path", help="Model path (.tflearn).", type=argparse.FileType('r'), required=True)
+    parser.set_defaults(occlusion_map=False, grad_cam=False)
+
+    args = parser.parse_args()
+    dt = str(int(time.time()))
+
+    h5f = h5py.File(args.file_path.name, "r")
+    if args.participant is None:
+        # Randomly choose ill participant
+        inLabels = h5f["inLabels"]
+        ppt = np.random.randint(inLabels.shape[0])
+        while inLabels[ppt][1] != 1.0:
+            ppt = np.random.randint(inLabels.shape[0])
+    else:
+        # Use user's participant
+        ppt = args.participant
+
     inData = h5f["inData"][ppt]
     inData = inData[np.newaxis,...]
 
     model = getCNN(2)
-    model.load("./data/placeholderModel") # The model that we want to test goes here
+    model.load(args.model_path.name)
 
-    inLabel = model.predict(inData)[:,1]
+    predLabel = model.predict(inData)[:,1]
 
-    maskWidth = 8 # Might be more representative to have this as even.
-    lossCube = np.zeros(inData.shape[1:4])
+    if abs(inLabels[ppt][1] - predLabel > 0.4):
+        # Throw a warning if the CNN misdiagnoses.
+        input("ERROR: CNN has misdiagnosed ppt ("+str(inLabels[ppt][1])+" vs "+str(predLabel)+").\n\
+    Press enter to continue (^c to exit).")
 
-    for j in np.arange(inData.shape[1] - maskWidth + 1):
-        for k in np.arange(inData.shape[2] - maskWidth + 1):
-            for l in np.arange(inData.shape[3] - maskWidth + 1):
-                loss = getLoss(inData, inLabel, maskWidth, j, k, l)
-                lossCube[j+maskWidth/2,k+maskWidth/2,l+maskWidth/2] = loss
-                print(j+maskWidth/2,k+maskWidth/2,l+maskWidth/2,":",loss)
+    if args.occlusion_map:
+        maskWidth = args.mask_width # Might be more representative to have this as even.
+        lossCube = getLossCube(inData, predLabel, maskWidth)
 
-    lossCube = normalise(lossCube)
+        np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_occlusion_map", lossCube)
 
-    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
+    if args.grad_cam:
+        observer = tflearn.DNN(conv_3, model.session)
+        conv_output = observer.predict(inData)
+        print(conv_output.shape)
 
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_heartCube", inData[0])
-    np.save("./logs/lossCubes/"+dt+"_ppt"+str(ppt)+"_"+str(maskWidth)+"_lossCube-"+str(i)+"-of-"+str(kfold-1), lossCube)
+    #np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])
+    #np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-stress", inData[0][...,1])
