@@ -45,9 +45,6 @@ def getLossCube(inData, inLabel, maskWidth):
 
     return normalise(lossCube)
 
-def getGradCam(inData, model):
-
-
 def normalise(inData):
     """
     Normalise 3D array.
@@ -65,7 +62,7 @@ if __name__ == "__main__":
     # Argument parsing
     parser = argparse.ArgumentParser("Generate losscube for SPECT scan files.")
     parser.add_argument("-o", "--occlusion_map", help="Use occlusion mapping for generation of the loss cube.", dest="occlusion_map", action="store_true")
-    parser.add_argument("-g", "--grad_cam", help="Use grad cam for generation of the loss cube.", dest="grad_cam", action="store_true")
+    parser.add_argument("-c", "--cam", help="Use CAM for generation of the loss cube.", dest="grad_cam", action="store_true")
     parser.add_argument("-w", "--mask_width", help="[n,n,n] mask to be used in the generation of the occlusion losscube.", type=int, default=4)
     parser.add_argument("-p", "--participant", help="Generate the losscube for this participant. If not given, a random ppt will be chosen.", type=int)
     parser.add_argument("-f", "--file_path", help="File path for input .h5 file.", type=argparse.FileType('r'), required=True)
@@ -89,7 +86,7 @@ if __name__ == "__main__":
     inData = h5f["inData"][ppt]
     inData = inData[np.newaxis,...]
 
-    model = getCNN(2)
+    model, observer = getCNN(2, observe=True)
     model.load(args.model_path.name)
 
     predLabel = model.predict(inData)[:,1]
@@ -105,10 +102,14 @@ if __name__ == "__main__":
 
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_occlusion_map", lossCube)
 
-    if args.grad_cam:
-        observer = tflearn.DNN(conv_3, model.session)
-        conv_output = observer.predict(inData)
-        print(conv_output.shape)
+    if args.cam:
+        weights = model.get_weights(tflearn.variables.get_layer_variables_by_name('FullyConnected')[0])
+        intLabel = int(np.rint(predLabel))
+        weights = weights[:,intLabel] # Put weights and observed through ReLU?
 
-    #np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])
-    #np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-stress", inData[0][...,1])
+        observed = observer.predict(inData)[0]
+        lossCube = normalise(np.tensordot(observed, weights, axes=[-1,0]))
+        np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_cam_map", lossCube)
+
+    np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])
+    np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-stress", inData[0][...,1])

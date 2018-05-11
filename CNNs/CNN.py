@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tflearn
 
-def getCNN(classes, finetune=False):
+def getCNN(classes, finetune=False, observe=False):
     """
         This is the current working CNN.
         classes is the number of classes (neurons in the final softmax layer) to be processed.
@@ -11,7 +11,7 @@ def getCNN(classes, finetune=False):
     tf.reset_default_graph()
     tflearn.initializations.normal()
 
-    if finetune == True:
+    if finetune:
         # Input layer:
         inp = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
@@ -31,7 +31,7 @@ def getCNN(classes, finetune=False):
         conv_3 = tflearn.layers.conv.conv_3d(max_2, 256, [2,2,2], activation="leaky_relu", trainable=False) # This was added for CNN 2017-08-24
 
         # Global pooling layer:
-        global_pool_0 = tf.reduce_mean(conv_3, [1,2,3])
+        global_pool_0 = tf.reduce_mean(conv_3, [1,2,3]) # fully connected layers removed and global pooling layer added 2018-05-11
 
         # Output layer:
         fc_0 = tflearn.layers.core.fully_connected(global_pool_0, classes, activation="softmax")
@@ -61,7 +61,7 @@ def getCNN(classes, finetune=False):
         conv_3 = tflearn.layers.conv.conv_3d(max_2, 256, [2,2,2], activation="leaky_relu") # This was added for CNN 2017-08-24
 
         # Global pooling layer:
-        global_pool_0 = tf.reduce_mean(conv_3, [1,2,3])
+        global_pool_0 = tf.reduce_mean(conv_3, [1,2,3]) # fully connected layers removed and global pooling layer added 2018-05-11
 
         # Output layer:
         fc_0 = tflearn.layers.core.fully_connected(global_pool_0, classes, activation="softmax")
@@ -69,4 +69,9 @@ def getCNN(classes, finetune=False):
         outp = tflearn.layers.estimator.regression(fc_0, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
         model = tflearn.DNN(outp, tensorboard_verbose=0)
 
-        return model
+        if observe:
+            observer = tflearn.DNN(conv_3, tensorboard_verbose=0)
+            return model, observer
+
+        if not observe:
+            return model
