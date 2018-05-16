@@ -41,9 +41,12 @@ def getLossCube(inData, inLabel, maskWidth):
             for l in np.arange(inData.shape[3] - maskWidth + 1):
                 loss = getLoss(inData, inLabel, maskWidth, j, k, l)
                 lossCube[j+maskWidth//2,k+maskWidth//2,l+maskWidth//2] = loss
-                print("{:03d} {:03d} {:03d} : {:.3f}".format(j+maskWidth//2,k+maskWidth//2,l+maskWidth//2,loss))
+                print(j+maskWidth//2,k+maskWidth//2,l+maskWidth//2,":",loss)
 
     return normalise(lossCube)
+
+def relu(x):
+    return np.maximum(x, 0)
 
 def normalise(inData):
     """
@@ -62,11 +65,11 @@ if __name__ == "__main__":
     # Argument parsing
     parser = argparse.ArgumentParser("Generate losscube for SPECT scan files.")
     parser.add_argument("-o", "--occlusion_map", help="Use occlusion mapping for generation of the loss cube.", dest="occlusion_map", action="store_true")
-    parser.add_argument("-c", "--cam", help="Use CAM for generation of the loss cube.", dest="grad_cam", action="store_true")
-    parser.add_argument("-w", "--mask_width", help="[n,n,n] mask to be used in the generation of the occlusion losscube.", type=int, default=4)
+    parser.add_argument("-c", "--cam", help="Use CAM for generation of the loss cube.", dest="cam", action="store_true")
+    parser.add_argument("-w", "--mask_width", help="[n,n,n] mask to be used in the generation of the occlusion losscube.", type=int, default=1)
     parser.add_argument("-p", "--participant", help="Generate the losscube for this participant. If not given, a random ppt will be chosen.", type=int)
     parser.add_argument("-f", "--file_path", help="File path for input .h5 file.", type=argparse.FileType('r'), required=True)
-    parser.add_argument("-m", "--model_path", help="Model path (.tflearn).", type=argparse.FileType('r'), required=True)
+    parser.add_argument("-m", "--model_path", help="Model path (.tflearn).", required=True)
     parser.set_defaults(occlusion_map=False, grad_cam=False)
 
     args = parser.parse_args()
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     inData = inData[np.newaxis,...]
 
     model, observer = getCNN(2, observe=True)
-    model.load(args.model_path.name)
+    model.load(args.model_path)
 
     predLabel = model.predict(inData)[:,1]
 
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     Press enter to continue (^c to exit).")
 
     if args.occlusion_map:
-        maskWidth = args.mask_width # Might be more representative to have this as even.
+        maskWidth = args.mask_width # Might be more representative to have this as even. 2018-05-14 -- lower is better!!
         lossCube = getLossCube(inData, predLabel, maskWidth)
 
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_occlusion_map", lossCube)
@@ -105,10 +108,11 @@ if __name__ == "__main__":
     if args.cam:
         weights = model.get_weights(tflearn.variables.get_layer_variables_by_name('FullyConnected')[0])
         intLabel = int(np.rint(predLabel))
-        weights = weights[:,intLabel] # Put weights and observed through ReLU?
+        weights = relu(weights[:,intLabel])
 
-        observed = observer.predict(inData)[0]
-        lossCube = normalise(np.tensordot(observed, weights, axes=[-1,0]))
+        observed = relu(observer.predict(inData)[0])
+        lossCube = np.pad(np.tensordot(weights, observed, axes=[0,-1]), [1,0], "constant")[:-1,:-1,:-1] # This padding is needed due to the precision loss in convolution
+        lossCube = scipy.ndimage.interpolation.zoom(lossCube, 4) # The int here is dependent on the pooling in the CNN
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_cam_map", lossCube)
 
     np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])

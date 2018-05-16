@@ -731,5 +731,71 @@
 [[./figures/visualisations/1525810428-unfolded.png]]
 - I will try and fix this tomorrow.
 
+** 2018-05-09
+- I'm going to implement a grad cam to go along with the already implemented occlusion mapping. 
+  If they are "looking" in the same area, we can conclude that the CNN is where the "bug" is.
+ 
+** 2018-05-10
+- Still implementing grad cam, having trouble with getting the gradients from tflearn... Should probably switch to Keras.
+- A simple class activation map might work! Since the tflearn CNN is simple, rewriting it wouldn't be too much trouble: putting
+  a 3D global average pool in the final layer would create a CNN that will natively generate a CAM! Who liked FC layers anyway?
+
+** 2018-05-11
+- Written the new CNN:
+  - Three convolutional layers interspersed with max pooling layers.
+  - A fourth convolutional layer followed by a global average pool (tf.reduce_mean(x, [1,2,3]).
+- It seems to be training pretty well. Will see how it does on the test data.
+- To get class activation maps:
+  - Get output of final conv layer, A_i.
+  - Get weights of each layer from the global average pool, w_i.
+  - CAM = sum(A_i*w_i)
+- CNN is now written to allow observation.
+
+*** Results from new fully-CNN (fakeData):
+- Spec 0.779, Sens 0.924, AUC, 0.915
+[[./figures/rocCurves/2018-05-11_18:05:00-roc_curve.png]]
+
+- Occlusion map and CAM are looking in different places... very odd.
+- CAM is not being resized at the moment!
+- Looks like CAM is looking at the top right corner....
+  
+** 2018-05-14
+- We have a problem with both the CAM and the occlusion map.
+  - Both look in the wrong place, and in different wrong places.
+- Going to see if I can debug on the MNIST dataset.
+  - There may be an issue with the observer in CNNs/CNN.py:
+    *defining two tflearn.DNN() consecutively messes with the loss.*
+- We still get the same error with the MNIST and the CAM mapping. There must be a bug
+  in the code that I am missing...
+- Occlusion mapping works well.. And a map of 1 works best. I should try this on the real data.
+[[./figures/visualisations/occlusion_map.png]]
+- It works on the real data!! (I think).
+- Testing the CAM on MNIST...
+  
+** 2018-05-15
+- Taking out max pooling in CNN... They aren't needed!! Can be replaced with a larger stridelength in the conv layers.
+- Replaced leaky_relu with relu.
+- CAM seems to be working on MNIST, but not overly well.. will see if I need any tweaks.
+- There is a definite tradeoff between training time and accuracy of CAM output.
+    - Less dropout works better for CAM, but worse for computation time.
+- MNIST with no pooling:
+[[./figures/mnist/realCube.png]]
+[[./figures/mnist/lossCube.png]]
+[[./figures/mnist/realCube_1.png]]
+[[./figures/mnist/lossCube_1.png]]
+- MNIST with a final convolution_transpose layer:
+[[./figures/mnist/realCube_2.png]]
+[[./figures/mnist/lossCube_2.png]]
+[[./figures/mnist/realCube_3.png]]
+[[./figures/mnist/lossCube_3.png]]
+- Looks like it works with a padding of 1 at start of x and y axes:
+[[./figures/mnist/without_padding.png]]
+[[./figures/mnist/with_padding.png]]
+- I will set up the CNN for training now and test this on the sims tomorrow.
+- To conclude:
+  - Occlusion map works
+  - CAM works with resizing.
+  - Also CAM is waay faster than occlusion mapping.
+
 ** TODO Fix and streamline lossCube code.
 ** TODO Start GAN.
