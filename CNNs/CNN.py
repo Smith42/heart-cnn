@@ -18,11 +18,11 @@ def getCNN(classes, finetune=False, observe=False):
         inp = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
         # First layer:
-        conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [10,10,10], strides=2, activation="relu", trainable=False)
+        conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [4,4,4], strides=2, activation="relu", trainable=False)
         #max_0 = tflearn.layers.conv.max_pool_3d(conv_0, [2,2,2], strides=[2,2,2])
 
         # Second layer:
-        conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [5,5,5], strides=2, activation="relu", trainable=False)
+        conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [4,4,4], strides=2, activation="relu", trainable=False)
         #max_1 = tflearn.layers.conv.max_pool_3d(conv_1, [2,2,2], strides=[2,2,2])
 
         # Third layer:
@@ -48,11 +48,11 @@ def getCNN(classes, finetune=False, observe=False):
         inp = tflearn.layers.core.input_data(shape=[None,34,34,34,2])
 
         # First layer:
-        conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [10,10,10], strides=2,  activation="relu")
+        conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [4,4,4], strides=2,  activation="relu")
         #max_0 = tflearn.layers.conv.max_pool_3d(conv_0, [2,2,2], strides=[2,2,2])
 
         # Second layer:
-        conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [5,5,5], strides=2, activation="relu")
+        conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [4,4,4], strides=2, activation="relu")
         #max_1 = tflearn.layers.conv.max_pool_3d(conv_1, [2,2,2], strides=[2,2,2])
 
         # Third layer:
@@ -70,11 +70,9 @@ def getCNN(classes, finetune=False, observe=False):
 
         outp = tflearn.layers.estimator.regression(fc_0, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
 
-        if observe:
-            observer = tflearn.DNN(conv_3, tensorboard_verbose=0)
-            # This seems to be a bug. Loading a DNN with both model and observer only uses the latter.
-            return observer
+        model = tflearn.DNN(outp, tensorboard_verbose=0)
 
+        if observe:
+            return model, conv_3
         if not observe:
-            model = tflearn.DNN(outp, tensorboard_verbose=0)
             return model

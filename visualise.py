@@ -1,3 +1,6 @@
+import matplotlib as mpl
+#mpl.use("Agg")
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -74,7 +77,8 @@ def brute_force_plot(heart_array, save_to, log, diagnostic_data=None):
         comap = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',[color,color],256)
         comap._init() # create the _lut array, with rgba values
         # create alpha array and fill the colormap with them.
-        alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.4) - 0.4 # a relu-like distribution with cut off at one third the maximum value
+        #alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.4) - 0.4 # a relu-like distribution with cut off at one third the maximum value
+        alphas = np.linspace(0,0.6,comap.N+3)
         comap._lut[:,-1] = alphas
 
         ax[0].imshow(diagnostic_data.reshape(diagnostic_data.shape[0], -1), cmap=comap)
@@ -252,7 +256,8 @@ def polar_plot(inData, save_to, log, diagnostic_data=None):
         comap = mpl.colors.LinearSegmentedColormap.from_list('my_cmap',[color,color],256)
         comap._init() # create the _lut array, with rgba values
         # create alpha array and fill the colormap with them.
-        alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.6) - 0.6 # a relu-like distribution with cut off at half the maximum value
+        #alphas = np.maximum(np.linspace(0, 1.6, comap.N+3), 0.6) - 0.6 # a relu-like distribution with cut off at half the maximum value
+        alphas = np.linspace(0,0.6,comap.N+3)
         comap._lut[:,-1] = alphas
 
         ax.pcolormesh(theta,r,diag_data.T,cmap=comap)
@@ -314,7 +319,6 @@ if __name__ == "__main__":
 
         #d_proc_array = crop_heart(d_raw_array)
         d_proc_array = d_raw_array
-        print(d_proc_array.shape)
 
         if args.cartesian:
             save_to = "./figures/visualisations/"+dt+"-cartesian.png"

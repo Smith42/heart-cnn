@@ -796,6 +796,12 @@
   - Occlusion map works
   - CAM works with resizing.
   - Also CAM is waay faster than occlusion mapping.
+    
+** 2018-05-16
+- We have CAM working on heartcube:
+[[./figures/visualisations/1526496554-cartesian.png]]
+[[./figures/visualisations/1526496554-polar.png]]
+- CNN has been changed so that the kernel size is smaller (better localisation).
 
 ** TODO Fix and streamline lossCube code.
 ** TODO Start GAN.

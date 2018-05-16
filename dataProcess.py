@@ -58,10 +58,10 @@ def importType(pptType, n):
     Return joined array.
     """
     tmplst = []
-    simsDir = "/data/jim/Heart/sims/"
+    simsDir = "/data/jim/mike/heart_data/"
     for i in np.arange(0,n):
-        cwdStress = str(simsDir+"stress_"+pptType+"_%0.4d.fits") %i
-        cwdCalm = str(simsDir+"rest_"+pptType+"_%0.4d.fits") %i
+        cwdStress = str(simsDir+"stress_"+pptType+"_%0.5d.fits") %i
+        cwdCalm = str(simsDir+"rest_"+pptType+"_%0.5d.fits") %i
         # Get zoomed 3d arrays:
         xAx = importHeartData(cwdCalm, cwdStress, 1) # zoom = 1
         tmplst.append(xAx)
@@ -99,7 +99,7 @@ def normalise(inData):
 if __name__ == "__main__":
 
     # Do data import
-    abName = "ischaemia"
+    abName = "infarction"
     abDat = importType(abName,1000)
     abDat = np.moveaxis(abDat,1,-1)
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     shufData = np.reshape(shufData,(-1,34,34,34,2))
 
     # Save data as HDF5 object:
-    h5f = h5py.File("./data/twoThousand.h5", "w")
+    h5f = h5py.File("./data/twoThousand_new.h5", "w")
     h5f.create_dataset("inData", data=shufData)
     h5f.create_dataset("inLabels", data=shufLabOH)
     h5f.close()

@@ -89,7 +89,7 @@ if __name__ == "__main__":
     inData = h5f["inData"][ppt]
     inData = inData[np.newaxis,...]
 
-    model, observer = getCNN(2, observe=True)
+    model, conv_3 = getCNN(2, observe=True)
     model.load(args.model_path)
 
     predLabel = model.predict(inData)[:,1]
@@ -99,21 +99,23 @@ if __name__ == "__main__":
         input("ERROR: CNN has misdiagnosed ppt ("+str(inLabels[ppt][1])+" vs "+str(predLabel)+").\n\
     Press enter to continue (^c to exit).")
 
+    maskWidth = args.mask_width # Might be more representative to have this as even. 2018-05-14 -- lower is better!!
+
     if args.occlusion_map:
-        maskWidth = args.mask_width # Might be more representative to have this as even. 2018-05-14 -- lower is better!!
         lossCube = getLossCube(inData, predLabel, maskWidth)
 
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_occlusion_map", lossCube)
 
     if args.cam:
+        observer = tflearn.DNN(conv_3, session=model.session)
         weights = model.get_weights(tflearn.variables.get_layer_variables_by_name('FullyConnected')[0])
         intLabel = int(np.rint(predLabel))
         weights = relu(weights[:,intLabel])
 
         observed = relu(observer.predict(inData)[0])
         lossCube = np.pad(np.tensordot(weights, observed, axes=[0,-1]), [1,0], "constant")[:-1,:-1,:-1] # This padding is needed due to the precision loss in convolution
-        lossCube = scipy.ndimage.interpolation.zoom(lossCube, 4) # The int here is dependent on the pooling in the CNN
-        np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_cam_map", lossCube)
+        lossCube = scipy.ndimage.interpolation.zoom(lossCube, 34.0/np.amax(lossCube.shape)) # The int here is dependent on the pooling in the CNN
+        np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_lossCube_cam_map", lossCube)
 
     np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])
     np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-stress", inData[0][...,1])
