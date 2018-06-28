@@ -55,7 +55,7 @@ if __name__ == "__main__":
             plt.plot(base_fpr, mean_tprs, color="darkblue", label="ROC curve")
         else:
             plt.plot(base_fpr, mean_tprs, color="darkblue", label="Average ROC curve")
-            plt.plot(base_fpr, scipy.signal.savgol_filter(mean_tprs,51,3),"--", color="darkblue", label="Smooth average ROC curve")
+            #plt.plot(base_fpr, scipy.signal.savgol_filter(mean_tprs,51,3),"--", color="darkblue", label="Smooth average ROC curve")
             plt.fill_between(base_fpr, tprs_lower, tprs_upper, color='lightblue', alpha=0.3)
 
         plt.plot([0, 1], [0, 1],'r--', label="Random guess")

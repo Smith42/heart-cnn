@@ -10,7 +10,13 @@
 #+EXCLUDE_TAGS: noexport
 #+CREATOR: Emacs 25.1.1 (Org mode 9.1.7)
 
-** 2017-07-03
+* Todo
+** TODO Improve old parametric sims
+** TODO Get some real identities CAM
+** TODO Change to [32,32,32,2] shape
+** TODO Sort out mess of CNNs
+* Dates
+** 2017-07-03 INITIAL SET UP
 
 - Initial set up of neural net, based on leNet-5, no signal out, most
   likely due to using unprocessed data.
@@ -20,12 +26,12 @@
 - I could try normalising the data to get a signal, but will need to
   get the unpadded data working first.
 
-** 2017-07-04
+** 2017-07-04 VISUALISER
 
 -  Wrote a visualisation of the data (=visualisation.py=).
 -  Still working on repadding the cropped data (It's a bit of a pain).
 
-** 2017-07-05
+** 2017-07-05 DATA CROPPING AND INITIAL SIGNAL
 
 - Repadded the cropped data, it is now of size [68,34,34].
 - Retrying the CNN with the new data doesn't get a signal. Maybe there
@@ -73,7 +79,7 @@
 [[./figures/rocCurves/2017-07-06_09:55:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-06]]
 [[./figures/rocCurves/2017-07-06_10:20:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-06]]
 
-** 2017-07-06
+** 2017-07-06 SCALING AND RESIZING
 
 - I redid the 2D slice data with three slices along the x, y, and z
   axes. It will take ~100 mins to finish learning. It's probably time
@@ -96,7 +102,7 @@
 - Added a ROC AUC calculator to the outputs.
 - I'm going to try artificially expanding the data.
 
-** 2017-07-07
+** 2017-07-07 OVERFITTING PROBLEMS
 
 - Because of the overfitting going on when running the CNN, I increased
   the L2 regularisers' weight decay from 0.001 to 0.01, and added an
@@ -124,7 +130,7 @@
 
 - Rewrote heart\_data.ipynb so that it can resize the input data.
 
-** 2017-07-10
+** 2017-07-10 ARTIFICIAL EXPANSION AND CNN ARCH
 
 - It might be better to use a Siamese CNN instead of a 4D CNN to
   compare two 3D images, as training will be faster.
@@ -156,7 +162,7 @@
   (like take 10 ppts from the pool before artificial expansion and use
   these to validate).
 
-** 2017-07-11
+** 2017-07-11 K-FOLDING
 
 - I have separated ppts into different k-folds before expansion, so
   each k-fold has unique ppts in it now, even after artificial
@@ -174,7 +180,7 @@
 - I have written a 2 channel CNN for the 3D data. It should be ready to
   try on the supercomputer.
 
-** 2017-07-12
+** 2017-07-12 2D CNN
 
 - Testing the 2dSiameseCNN on the supercomputer:
   =$ qsub -q gpu -l nodes=1:ppn=16 -I -X -l walltime=24:00:00= It
@@ -203,7 +209,7 @@
    - Look at labelling, try on simpler data (MNIST 0s and 1s?),
      reintroduce k-folding?
 
-** 2017-07-14
+** 2017-07-14 3D CNN
 
 - Added overall average performance metric to 3dCNN-nokfold.
 - I think I have found the cause of the low ROC/accuracy. The random
@@ -222,7 +228,7 @@
   < It looks like it is due to the CNN training well on "easy"
   examples.
 
-** 2017-07-24
+** 2017-07-24 CNN ARCH
 
 - Trying a CNN with both heart cubes encoded as one (through matrix
   multiplication).
@@ -247,7 +253,7 @@
 
 - Set up a job for overnight. We'll see how it does tomorrow.
 
-** 2017-07-25
+** 2017-07-25 RUNNING 3D CNN ON SUPERCOMPUTER
 
 - To run headless on a server I need the following at the top
   (matplotlib uses X by defualt).
@@ -270,7 +276,7 @@
   k-fold is considered separately. Looks promising though: ~0.6
   accuracy after 400 epochs.
 
-** 2017-07-26
+** 2017-07-26 RESULTS
 
 - The results from the latest run have training accuracy at 55%, with
   validation accuracy around the same (mean AUC = 0.54). I'll try again
@@ -321,7 +327,7 @@
   validation set.
 - Processing the log files would be better done in an ipynb.
 
-** 2017-07-27
+** 2017-07-27 RESULTS
 
 - Results from last run have an average specificity of 0.54, and an
   average sensitivity of 0.62. The AUC average is 0.60.
@@ -385,7 +391,7 @@
   - AVG spec 0.62, AVG sens 0.61, AVG AUC 0.66. (Over k=3 folds).
   - [[./figures/rocCurves/2017-07-27_18:04:00-3dCNN2chfakedata.png][ROC curve from less regularised CNN 2017-07-26]]
 
-** 2017-07-31
+** 2017-07-31 RESULTS
 
 - Newest results are in with the following CNN:
 
@@ -443,13 +449,13 @@
 
    - [[./figures/rocCurves/2017-07-31_13:26:00-3dCNN2chrealdata.png][ROC curve from application of CNN 2017-07-28 to real data]]
      
-** 2017-08-01
+** 2017-08-01 CNN ARTEFACT VIS
 
 - The visualisation of where the CNN is diagnosing the patient is
   ready, but it doesn't seem to be looking in the correct places. Maybe
   the two matrices aren't aligned properly?
 
-** 2017-08-02
+** 2017-08-02 CNN ARTEFACT VIS
 
 - Adding another conv layer to the CNN doesn't improve things. Moving
   back to previous CNN...
@@ -471,7 +477,7 @@
   the latest CNN is done training I'll use a very deep cnn to see if we
   can do any better than 70% acc.
 
-** 2017-08-03
+** 2017-08-03 RESULTS
 
 - OOM when running prediction on new cnn. It is only getting ~0.63
   accuracy on the validation dataset so no big loss. Reverting to
@@ -525,7 +531,7 @@
 
 - k-folded getDiagArea is gtg when gpu is free.
 
-** 2017-08-04
+** 2017-08-04 vDEEPCNN
 
 - vDeepCNN with average pooling at the end doesn't seem to work. It
   does seem to work with FC layers. I'll set that running before I
@@ -539,7 +545,7 @@
 - I could try training the CNN on the simulated data and then
   fine-tuning the CNN on the real data...
 
-** 2017-08-07
+** 2017-08-07 HDF5 AND FINETUNING
 
 - Only using the real data doesn't find anything.
 - Finetuning model with cnnFinetune.py
@@ -558,7 +564,7 @@
   get it working without an OOM error.
 - I am rewriting the CNN to handle the data via HDF5.
 
-** 2017-08-08
+** 2017-08-08 HDF5 and tflearn.predict issues
 
 - HDF5 CNN is up and running. The tflearn.predict class is a bit of a
   pita as it loads all the input data into vram before usage. I have
@@ -571,7 +577,7 @@
 
 - Running cnnH5.py on the CNN used in 2017-07-28.
 
-** 2017-08-10
+** 2017-08-10 FINETUNING
 
 - Running the CNN with 19000 samples gives a validation accuracy of
   ~0.8.
@@ -587,14 +593,14 @@
   to train the CNN from scratch on real data. It might also be better
   to use some more realistic fake data.
 
-** 2017-08-14
+** 2017-08-14 PAIRWISE CNN
 
 - Running the CNN on mixed, infarction, ischaemic, artefact, and
   healthy patients pairwise. Only using 20 epochs of 10000 examples of
   ill/healthy.
 - It takes ages putting the hearts into *.h5...
 
-** 2017-08-15
+** 2017-08-15 PAIRWISE CNN RESULTS
 
 - Here are the ROC curves for the pairwise data (20 epochs, 10000
   ill/10000 healthy). The ROC curve should begin at
@@ -611,7 +617,7 @@
   won't show any more. Idky...
 - cnnAll.py should take ~20 hours.
 
-** 2017-08-16
+** 2017-08-16 PAIRWISE CNN RESULTS
 
 - We get a validation and test accuracy of ~0.471, and a training
   accuracy of 0.99. I will turn on some regularisation to stop the
@@ -628,25 +634,25 @@
 
 - Regularisation atm is way too high. Changed the weighting to 0.0001.
 
-** 2017-08-18
+** 2017-08-18 REGULARISATION
 
 - The regularisation of 0.0001 has achieved a ~2% increase in accuracy.
   Although this might be within the margin of error.
 
-** 2017-08-21
+** 2017-08-21 BUG FIXING
 
 - There are a load of bugs in the ROC generation in cnnAll.py.
   Fixing...
 - I think I have fixed all the bugs now. Running the ROC generator.
 
-** 2017-08-22
+** 2017-08-22 RESULTS
 
 - We are getting an AUC score of ~0.81. I will run the cnnAll again and
   see if we can finally get an ROC curve from this.
 - Passing each heartcube through tf.predict is not very efficient... If
   this becomes an issue I can try passing slices instead.
 
-** 2017-08-23
+** 2017-08-23 CNNALL.PY
 
 - Looks like the supercomputer is having trouble processing the code.
   Splitting the CNN training and ROC/AUC evaluation into separate
@@ -655,7 +661,7 @@
   =cnnAll.py= since cnnAll implements the 3D CNN to all types of heart,
   and has a solid evaluation output (ROC, acc for each illness, etc.).
 
-** 2017-08-24
+** 2017-08-24 SLOWING GPU
 
 - The computer timed out... :(
 - I think the GPU is slowing because it is nearly OOM... Maybe split
@@ -663,7 +669,7 @@
 - I could probably also generate ROC curves for each ill/healthy pair,
   but this would take a long time on the computer we have.
 
-** 2017-08-28
+** 2017-08-28 SLOW GPU FIXED
 
 - Fixed the slowing problem. The masking of the inData\_test array was
   performed for each prediction, meaning each masked array was stored
@@ -671,7 +677,7 @@
 - I've changed the weight decay to 0.00001 on all FC layers. This might
   fix the overfitting (and low performance) problem with cnnAll.py.
 
-** 2017-08-29
+** 2017-08-29 OVERFITTING ISSUE
 
 - The overfitting is still a problem... I have removed one of the FC
   layers, and upped the regularisation on the remaining layers.
@@ -681,7 +687,7 @@
 
    - [[./figures/rocCurves/2017-08-31_09:46:00-CNN-all.png][ROC for ill/healthy matchings]]
 
-** 2018-05-02
+** 2018-05-02 SIM GEN CHANGES, FINETINED RESULTS
 
 - I have changed the sim generation software so that it looks more like
   the real data.
@@ -705,13 +711,13 @@
   simulated scan diagnosing. We just need to improve the sims with a 3D
   GAN. 
 
-** 2018-05-04
+** 2018-05-04 POLAR PLOT VIS
 - Polar plot is tentatively up:
   [[./figures/diagnoses/polar_plot.png][polar plot example]]
 - Not *great* and I think we can do much better, but for now, we know it works.
 - Writing up a python visualisation module now.
 
-** 2018-05-07
+** 2018-05-07 BRUTE FORCE PLOT VIS
 - visualise.py is working for cartesian and polar coord systems. 
   I need to figure out a way to get the diagnosis cube into it for the folded visualisation.
   This should be easy enough...
@@ -720,7 +726,7 @@
 - We are getting something... Will play around with it more tomorrow.
 [[./figures/visualisations/1525726948.409029-cartesian.png][Visualisation of losscube.]]
 
-** 2018-05-08
+** 2018-05-08 ARTEFACT SITE VIS
 - Losscube overlay for visualisation is working well now:
 [[./figures/visualisations/1525810383-polar.png]]
 [[./figures/visualisations/1525810383-cartesian.png]]
@@ -731,16 +737,16 @@
 [[./figures/visualisations/1525810428-unfolded.png]]
 - I will try and fix this tomorrow.
 
-** 2018-05-09
+** 2018-05-09 GRAD CAM
 - I'm going to implement a grad cam to go along with the already implemented occlusion mapping. 
   If they are "looking" in the same area, we can conclude that the CNN is where the "bug" is.
  
-** 2018-05-10
+** 2018-05-10 *JUST* CAM
 - Still implementing grad cam, having trouble with getting the gradients from tflearn... Should probably switch to Keras.
 - A simple class activation map might work! Since the tflearn CNN is simple, rewriting it wouldn't be too much trouble: putting
   a 3D global average pool in the final layer would create a CNN that will natively generate a CAM! Who liked FC layers anyway?
 
-** 2018-05-11
+** 2018-05-11 FULLY-CNN
 - Written the new CNN:
   - Three convolutional layers interspersed with max pooling layers.
   - A fourth convolutional layer followed by a global average pool (tf.reduce_mean(x, [1,2,3]).
@@ -759,7 +765,7 @@
 - CAM is not being resized at the moment!
 - Looks like CAM is looking at the top right corner....
   
-** 2018-05-14
+** 2018-05-14 CAM AND OCCLUSION MAP PROBLEM
 - We have a problem with both the CAM and the occlusion map.
   - Both look in the wrong place, and in different wrong places.
 - Going to see if I can debug on the MNIST dataset.
@@ -772,7 +778,7 @@
 - It works on the real data!! (I think).
 - Testing the CAM on MNIST...
   
-** 2018-05-15
+** 2018-05-15 CAM IS FASTER THAT O-MAP
 - Taking out max pooling in CNN... They aren't needed!! Can be replaced with a larger stridelength in the conv layers.
 - Replaced leaky_relu with relu.
 - CAM seems to be working on MNIST, but not overly well.. will see if I need any tweaks.
@@ -797,11 +803,169 @@
   - CAM works with resizing.
   - Also CAM is waay faster than occlusion mapping.
     
-** 2018-05-16
+** 2018-05-16 CAM WORKING, SMALLER KERNEL SIZES
 - We have CAM working on heartcube:
 [[./figures/visualisations/1526496554-cartesian.png]]
 [[./figures/visualisations/1526496554-polar.png]]
 - CNN has been changed so that the kernel size is smaller (better localisation).
 
-** TODO Fix and streamline lossCube code.
-** TODO Start GAN.
+** 2018-05-17 GAN FOR FAKEDATA
+- CNN is not converting to real data (spec = 1.0, sens = 0.0). We need to get better fake data.
+- Working on a GAN to generate better data.
+- GAN is written for MNIST... testing at 10 epochs.
+- Need waay more than that, output from not_my_gan_mnist.ipynb at 100 epochs (full MNIST dataset):
+[[./figures/mnist/gan/gan_mnist.png]]
+- Using only 50 images/class at 10,000 epochs:
+[[./figures/mnist/gan/mnist_restricted_gan.png]]
+- Not as bad as I thought.. Trying the GAN is probably worth it then!
+
+** 2018-05-18 WHICH GAN ARCH?
+- Stack-GAN looks like a good bet! V1 or V2??
+(https://github.com/hanzhanggit/StackGAN-v2, https://github.com/hanzhanggit/stackgan)
+- We can leverage its architecture to generate 3D images.
+- Also, if we use a conditional GAN we can ask it to generate a bunch of single cubes 
+  (like healthy stress for example). This will reduce the work the GAN has to do.
+- A problem that might come up is the lack of training data... I don't really see a good way
+  around this. We could artificially expand the dataset, but real data would always be better!
+- Another problem is the (very large) amount of voxels in our cubes. We have 34^3=39,304 voxels 
+  in a heartcube, compared to the stackGAN's 256^2=35,536.
+- I have forked Stack-GAN-v2... will try porting over to tensorflow (tflearn).
+  
+** 2018-05-22 GAN ISSUES
+- Having trouble with getting GAN to learn. No change in loss over time.
+- output:
+[[./gan/figures/2018-05-22-mnist.png]]
+- With batch normalisation no change in GAN after 28 epochs.
+- Will take a closer look at Stack-GAN and see where I am going wrong.
+[[./gan/figures/2018-05-22-mnist_2.png]]  
+- Maybe something is happening (see above). 
+- After 130 epochs no change..
+- Is a complicated GAN needed? A simple FC-NN may be good enough...
+  
+** 2018-05-23 TRYING ON ECG
+- Falling back to ECG GAN generation. It's more interesting than MNIST. Using PTB diagnostic database.
+- Generating h5py file of ECG scans.
+- h5py file is generated. Will work on GAN tomorrow.
+- ecg-gan is in /home/mike/Documents/hertsDegree/ecg-gan
+  
+** 2018-05-24 USING BEGAN
+- Using real data fully CNN with L2 regularization on each layer gives:
+
+|            | Accuracy (1527177683) |
+|------------+-----------------------|
+| Train      |                0.9687 |
+| Validation |                0.9896 |
+| Test       |                0.7658 |
+
+- This is a good starting point. The model used here is "1527177683" @ 30 epochs.
+- Our GAN has mode collapse. :(
+- Using [[https://arxiv.org/pdf/1703.10717.pdf][BEGAN]] as the base GAN. Once this is set up we can "tile" it to get a stacked GAN for
+  our SPECT scans.
+ 
+** 2018-05-25 "
+- BEGAN is going well. Still some debugging to do. Should get it up and running in a couple of days
+  for the ECG dataset.
+** 2018-05-28 BEGAN IS FORKED AND RUNNING
+- BEGAN is forked and up and running for ECG scans. 
+- Training on ill ECGs now. 
+- Will wait until solved (at around 19:30 with a five hour training time).
+- Doesn't look all too great at 30 epochs. Will leave on for 300.
+  
+** 2018-05-29 BEGAN NOT WORKING
+- BEGAN trained to 300 epochs:
+[[./gan/figures/300_epochs.png]]
+- Doesn't seem to be converging onto a value...
+  - Tried lam=0.0001, lam=0.1, lam=0.001, no convergence.
+- Problem with input data??
+- Will try and get the ECG to work on the very simple tflearn GAN.
+- Sigmoid neurons do not result in good output (seems to be very dichotomous).
+
+** 2018-05-30 PRELIM GAN GEN
+- Mnist-gan (for ecg of shape 800) is working with default losses, but we are getting a load 
+  of numerical instability (log(x) -> inf as x -> 0).
+- tf.maximum(x, 1e-9) is a decent plaster to mitigate this, but there may be a better way...
+- Result for ecg of shape 800 at 140 epochs:
+[[./figures/ecg-gan/gan-mnist-ecg-example.png]]
+- No such luck with a direct translation into the CNN (0.4 accuracy). Maybe a better GAN is needed.
+- We can get some decent Cosine similarities (~0.63)!
+*** Results
+    - Using simulated data results in an improvement(!) over real data:
+|                | Sim (1527712130) | Real (1527713245) |
+|----------------+------------------+-------------------|
+| Acc (train)    |           0.9992 |            0.8999 |
+| Acc (validate) |           0.9990 |            0.9089 |
+| Acc (test)     |           0.7990 |            0.7284 |
+
+     - This is for the same amount of sims and reals at 5 epochs.
+
+** 2018-05-31 RESULTS
+Model 1527177683 (real data) has
+
+    |            | Accuracy |
+    |------------+----------|
+    | Train      |   0.9687 |
+    | Validation |   0.9896 |
+    | Test       |   0.7658 |
+    
+Model 1527712130 (Simulated data with GAN) has (at 5 epochs), compared to model 1527713245 (real, 5 epochs)
+
+    |                |    Sim |   Real |
+    |----------------+--------+--------|
+    | Acc (train)    | 0.9992 | 0.8999 |
+    | Acc (validate) | 0.9990 | 0.9089 |
+    | Acc (test)     | 0.7990 | 0.7284 |
+
+** 2018-06-01 DAGAN, BEGAN DEBUG
+- Incorporate DAGAN??
+  - Will get BEGAN working first
+- Removed Sigmoid final layer on GEN (why is it there?)
+  - Sigmoid final layer was not the issue.
+
+** 2018-06-05 MORE BEGAN DEBUG
+- Is the problem my 1D NN implementation? No.
+- Is the problem the use of Fortran reshaping order? No.
+- Is the problem gamma? Don't know yet.
+- Trying MNIST to see if that offers any insights.
+- I should check to see if I'm feeding in the images ok.
+- I also need to force diversity in the output (laarge gamma??).
+
+** 2018-06-06 IT WASN'T MY BUG!!
+- Training MNIST for 130 epochs does not work.
+- Running BEGAN on original data (celebA, B) for 20 epochs to see if it works.
+- The problem may be in my 1D conv layers so testing on that.
+
+** 2018-06-07 "
+- Artcg's GAN doesn't work on default settings!
+
+** 2018-06-11 "
+- Wrong var-scope was being used to update GAN settings!
+- Running on supercomputer... Getting no real output. Output looks bad after 300 epochs.
+- Own VAE works, but only if I use a absolute difference as a loss.
+
+** 2018-06-14 "
+- Need a way to measure variability of the data.
+- Once this is done I can measure similarity to OG data too.
+
+** 2018-06-22 AUGMENTING HEART DATA
+*** Proposed:
+    - Augment via classical augs.
+    - Feed augs into GAN
+    - Refeed GAN outputs into CNN.
+
+*** Classical AUG:
+    - Blur
+    - Flip
+    - Rotate
+    - Translate
+
+- Need to make sure the k-folds don't cross contaminate!!
+
+** 2018-06-25
+- AUGMENTOR is running!
+- Results of augmented CNN:
+
+   [[./figures/rocCurves/2018-06-27_14:24:00-roc_curve.png]]
+
+- Would bootstrapping result in a better value?
+- Look at monte-carlo x-validation, bootstrapping
+- Still need to clean the CNN, and make another commit.
