@@ -1,52 +1,80 @@
 from __future__ import print_function
 
 import numpy as np
-import os
-import sys
+import argparse
 import tensorflow as tf
 import tflearn
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
-from numpy import interp
 from sklearn.metrics import roc_curve, roc_auc_score
 from CNN import getCNN
-import scipy
 import h5py
-import datetime
+import time
 
+def gen_folds(num_ars, i, k):
+    """ Generate fold pointer arrays given number of total data cubes """
+    k_arr = np.arange(k)
+
+    h_ind = np.arange(num_ars/2)
+    np.random.shuffle(h_ind)
+    i_ind = np.arange(num_ars/2,num_ars)
+    np.random.shuffle(i_ind)
+
+    k_folds_h = np.array_split(h_ind, k)
+    k_folds_i = np.array_split(i_ind, k)
+    k_folds = [np.concatenate((k_folds_h[j], k_folds_i[j])) for j in k_arr]
+
+    current_fold = np.sort(k_folds[i])
+    ro_folds = np.sort(np.concatenate(k_folds[:i]+k_folds[i+1:]))
+    # We now have shuffled k folds ready for input
+    return list(current_fold), list(ro_folds)
+ 
 # Import and preprocess data
 
 if __name__ == "__main__":
-    i = int(sys.argv[1]) # current fold
-    k = 5 # kfolds
-    k_arr = np.arange(k)
-    k_arr_m = k_arr[k_arr != i]
+    # Argument parsing
+    parser = argparse.ArgumentParser("Run k-folded CNN on augmented data.")
+    parser.add_argument(type=int, dest="i", help="Current testing k-fold.")
+    parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5).")
+    parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
+    args = parser.parse_args()
+
+    print("Seed:", str(args.SEED))
+    print("Current kfold:", str(args.i), "of", str(args.k-1))
+    np.random.seed(args.SEED)
 
     h5_aug = h5py.File("./data/aug_data.h5", "r")
-    inData = h5_aug["in_data"]
-    inLabelsOH = h5_aug["in_labels"]
-    print(inData.shape)
+    # Fancy indexing is inefficient in H5PY... Look for a nicer way to implement this. (only load current batch into memory?)
+    num_ars = h5_aug["in_labels"].shape[0]
+    current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
 
-    inData = np.concatenate([h5f["kfold/"+str(k_arr_m[0])], h5f["kfold/"+str(k_arr_m[1])], h5f["kfold/"+str(k_arr_m[2])], h5f["kfold/"+str(k_arr_m[3])]])
-    inLabelsOH = np.eye(2)[np.concatenate([h5f["klabel/"+str(k_arr_m[0])], h5f["klabel/"+str(k_arr_m[1])], h5f["klabel/"+str(k_arr_m[2])], h5f["klabel/"+str(k_arr_m[3])]]).astype(int)]
+    inData = h5_aug["in_data"][ro_folds]
+    inLabelsOH = h5_aug["in_labels"][ro_folds]
+    inLabelsOH = np.repeat(inLabelsOH,inData.shape[1],axis=0)
+    inData = inData.reshape([-1,inData.shape[2],inData.shape[3],inData.shape[4],inData.shape[5]])
+    h5_aug.close()
+
     inData, inLabelsOH = mutual_shuf(inData, inLabelsOH)
+    print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
 
-    inData_test = np.load("./data/shufData.npy")
-    inLabels_test = np.load("./data/shufLab.npy")
-    illTest = np.array_split(inData_test[inLabels_test == 1], k)
-    healthTest = np.array_split(inData_test[inLabels_test == 0], k)
-    illTest = illTest[i]
-    healthTest = healthTest[i]
-    print(illTest.shape, healthTest.shape)
+    h5_real = h5py.File("./data/real_data.h5", "r")
+    inData_test = h5_real["in_data"][current_fold]
+    inLabelsOH_test = h5_real["in_labels"][current_fold]
+    inLabels_test = inLabelsOH_test[:,1]
+    h5_real.close()
+    print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
+
+    illTest = inData_test[inLabels_test == 1]
+    healthTest = inData_test[inLabels_test == 0]
 
     # Neural net (two-channel)
     sess = tf.InteractiveSession()
     model = getCNN(2) # 2 classes: healthy, ischaemia
 
     # Train the model, leaving out the kfold not being used
-    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=20, show_metric=True)
-    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
-    model.save("./models/"+dt+"-augment_data.tflearn")
+    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=30, show_metric=True)
+    dt = str(int(time.time()))
+    model.save("./models/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data.tflearn")
 
     # Get sensitivity and specificity
     healthLabel = np.tile([1,0], (len(healthTest), 1))
@@ -65,8 +93,7 @@ if __name__ == "__main__":
     auc = roc_auc_score(inLabels_test, predicted[:,1])
 
     print(spec[0], sens[0], auc)
-    savefileacc = "./logs/"+dt+"-"+str(i)+"-augment_data-acc.log"
-    savefileroc = "./logs/"+dt+"-"+str(i)+"-augment_data-roc.log"
+    savefileacc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-acc.log"
+    savefileroc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-roc.log"
     np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
     np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
-    h5f.close()
