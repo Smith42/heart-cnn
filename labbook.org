@@ -960,7 +960,7 @@ Model 1527712130 (Simulated data with GAN) has (at 5 epochs), compared to model 
 
 - Need to make sure the k-folds don't cross contaminate!!
 
-** 2018-06-25
+** 2018-06-25 AUGMENTOR
 - AUGMENTOR is running!
 - Results of augmented CNN:
 
@@ -969,3 +969,8 @@ Model 1527712130 (Simulated data with GAN) has (at 5 epochs), compared to model 
 - Would bootstrapping result in a better value?
 - Look at monte-carlo x-validation, bootstrapping
 - Still need to clean the CNN, and make another commit.
+
+** 2018-06-28 AUGMENTOR PT II
+- augmentor is redone so that we get an output [58,1024,32,32,32,2]. 
+    This keeps the augmented data in bins of similarity.
+- Will think of a nice way to mix the data (+kfolds).

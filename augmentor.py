@@ -58,11 +58,11 @@ if __name__ == "__main__":
 
     aug_arr = np.expand_dims(augment(np.expand_dims(examples[0],0)), 0)
     print("Total array shape: "+str(aug_arr.shape)+"\n")
-    for heart in examples[1:3]:
+    for heart in examples[1:]:
         heart = np.expand_dims(heart, 0)
         aug_arr = np.append(aug_arr, np.expand_dims(augment(heart), axis=0), axis=0)
         print("Total array shape: "+str(aug_arr.shape)+"\n")
 
     with h5py.File("./data/aug_data.h5") as hf:
-         hf.create_dataset("in_data", data=aug_arr)
-         hf.create_dataset("in_labels", data=labelsOH)
+        hf.create_dataset("in_data", data=aug_arr)
+        hf.create_dataset("in_labels", data=labelsOH)

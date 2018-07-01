@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--cam", help="Use CAM for generation of the loss cube.", dest="cam", action="store_true")
     parser.add_argument("-w", "--mask_width", help="[n,n,n] mask to be used in the generation of the occlusion losscube.", type=int, default=1)
     parser.add_argument("-p", "--participant", help="Generate the losscube for this participant. If not given, a random ppt will be chosen.", type=int)
-    parser.add_argument("-f", "--file_path", help="File path for input .h5 file.", type=argparse.FileType('r'), required=True)
+    parser.add_argument("-f", "--file_path", help="File path for input .h5 file.", type=argparse.FileType('r'), default="../data/real_data.h5", const="../data/real_data.h5")
     parser.add_argument("-m", "--model_path", help="Model path (.tflearn).", required=True)
     parser.set_defaults(occlusion_map=False, grad_cam=False)
 
@@ -76,17 +76,25 @@ if __name__ == "__main__":
     dt = str(int(time.time()))
 
     h5f = h5py.File(args.file_path.name, "r")
+
+    # Randomly choose ill participant
+    inLabels = h5f["in_labels"]
+    #inLabels = np.load("./data/shufLab.npy")
+    #inLabels = np.eye(2)[inLabels.astype(int)]
+    print(inLabels.shape)
+
     if args.participant is None:
-        # Randomly choose ill participant
-        inLabels = h5f["inLabels"]
         ppt = np.random.randint(inLabels.shape[0])
         while inLabels[ppt][1] != 1.0:
             ppt = np.random.randint(inLabels.shape[0])
     else:
         # Use user's participant
         ppt = args.participant
+    print("Participant:",ppt) 
 
-    inData = h5f["inData"][ppt]
+    #inData = np.load("./data/shufData.npy")[ppt]
+
+    inData = h5f["in_data"][ppt]
     inData = inData[np.newaxis,...]
 
     model, conv_3 = getCNN(2, observe=True)
@@ -94,6 +102,7 @@ if __name__ == "__main__":
 
     predLabel = model.predict(inData)[:,1]
 
+    print(abs(inLabels[ppt][1] - predLabel > 0.4))
     if abs(inLabels[ppt][1] - predLabel > 0.4):
         # Throw a warning if the CNN misdiagnoses.
         input("ERROR: CNN has misdiagnosed ppt ("+str(inLabels[ppt][1])+" vs "+str(predLabel)+").\n\
