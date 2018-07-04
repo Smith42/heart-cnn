@@ -52,25 +52,14 @@ if __name__ == "__main__":
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)
 
-    h5_aug = h5py.File("./data/aug_data.h5", "r")
-    # Fancy indexing is inefficient in H5PY... Look for a nicer way to implement this. (only load current batch into memory?)
-    num_ars = h5_aug["in_labels"].shape[0]
-    current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
-
-    inData = h5_aug["in_data"][ro_folds]
-    inLabelsOH = h5_aug["in_labels"][ro_folds]
-    inLabelsOH = np.repeat(inLabelsOH,inData.shape[1],axis=0)
-    inData = inData.reshape([-1,inData.shape[2],inData.shape[3],inData.shape[4],inData.shape[5]])
-    h5_aug.close()
-
-    inData, inLabelsOH = mutual_shuf(inData, inLabelsOH)
+    h5f = h5py.File("./data/temp_data.h5", "r")
+    inData = h5f["augs/data"]
+    inLabelsOH = h5_aug["augs/labels"]
     print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
 
-    h5_real = h5py.File("./data/real_data.h5", "r")
-    inData_test = h5_real["in_data"][current_fold]
-    inLabelsOH_test = h5_real["in_labels"][current_fold]
+    inData_test = h5f["reals/data"]
+    inLabelsOH_test = h5f["labels"]
     inLabels_test = inLabelsOH_test[:,1]
-    h5_real.close()
     print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
 
     illTest = inData_test[inLabels_test == 1]

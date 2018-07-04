@@ -60,4 +60,4 @@ if __name__ == "__main__":
     real_grp = h5f_temp.create_group("reals")
     real_grp.create_dataset("data", data=inData_test)
     real_grp.create_dataset("labels", data=inLabelsOH_test)
-    h5_temp.close()
+    h5f_temp.close()
