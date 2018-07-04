@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import tensorflow as tf
 import tflearn
+import horovod.tensorflow as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     config = tf.ConfigProto()
     config.gpu_options.visible_device_list = str(hvd.local_rank())
 
-    print("Hvd current rank:", str(hvd.local_rank))
+    print("Hvd current rank:", str(hvd.local_rank()))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)
@@ -76,8 +77,9 @@ if __name__ == "__main__":
     healthTest = inData_test[inLabels_test == 0]
 
     # Neural net (two-channel)
-    sess = tf.InteractiveSession()
+    sess = tf.Session()
     model = getCNN(2) # 2 classes: healthy, ischaemia
+    hvd.broadcast_global_variables()
 
     # Train the model, leaving out the kfold not being used
     model.fit(inData, inLabelsOH, batch_size=100, n_epoch=30, show_metric=True)
