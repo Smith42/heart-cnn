@@ -1,4 +1,5 @@
 import tensorflow as tf
+import horovod as hvd
 import tflearn
 
 def getCNN(classes, observe=False):
@@ -10,6 +11,7 @@ def getCNN(classes, observe=False):
     # Neural net (two-channel)
     tf.reset_default_graph()
     tflearn.initializations.normal()
+    print(hvd.size())
 
     # leaky_relu replaced with relu. Max pooling replaced with strides in conv layers. 2018-05-18
 
@@ -34,7 +36,9 @@ def getCNN(classes, observe=False):
     # Output layer:
     fc_0 = tflearn.layers.core.fully_connected(global_pool_0, classes, activation="softmax")
 
-    outp = tflearn.layers.estimator.regression(fc_0, optimizer="adam", learning_rate=0.0001, loss='categorical_crossentropy')
+    adam = tflearn.optimizers.Adam(learning_rate=(0.0001*hvd.size()), name='Adam')
+    adam = hvd.DistributedOptimizer(adam)
+    outp = tflearn.layers.estimator.regression(fc_0, optimizer=adam, loss='categorical_crossentropy')
 
     model = tflearn.DNN(outp, tensorboard_verbose=0)
 
