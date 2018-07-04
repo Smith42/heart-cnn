@@ -9,7 +9,7 @@ import os
 import sklearn
 from sklearn.metrics import roc_curve, roc_auc_score
 import scipy, scipy.signal
-import datetime
+import time
 
 if __name__ == "__main__":
     # Argument parsing
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.set_defaults(log=False, cnnAll=False)
     args = parser.parse_args()
 
-    dt = str(datetime.datetime.now().replace(second=0, microsecond=0).isoformat("_"))
+    dt = str(int(time.time()))
 
     if args.roc and not args.cnnAll:
         tft = []

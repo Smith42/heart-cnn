@@ -28,7 +28,7 @@ def gen_folds(num_ars, i, k):
     ro_folds = np.sort(np.concatenate(k_folds[:i]+k_folds[i+1:]))
     # We now have shuffled k folds ready for input
     return list(current_fold), list(ro_folds)
- 
+
 # Import and preprocess data
 
 if __name__ == "__main__":
@@ -39,6 +39,14 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
     args = parser.parse_args()
 
+    # Initialize Horovod
+    hvd.init()
+
+    # Pin GPU to be used to process local rank (one GPU per process)
+    config = tf.ConfigProto()
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+
+    print("Hvd current rank:", str(hvd.local_rank))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)

@@ -17,10 +17,10 @@ def getCNN(classes, observe=False):
     inp = tflearn.layers.core.input_data(shape=[None,32,32,32,2])
 
     # First layer:
-    conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [4,4,4], strides=2,  activation="relu")
+    conv_0 = tflearn.layers.conv.conv_3d(inp, 32, [4,4,4], strides=2,  activation="relu") # [16,16,16]
 
     # Second layer:
-    conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [4,4,4], strides=2, activation="relu")
+    conv_1 = tflearn.layers.conv.conv_3d(conv_0, 64, [4,4,4], strides=2, activation="relu") # [8,8,8]
 
     # Third layer:
     conv_2 = tflearn.layers.conv.conv_3d(conv_1, 128, [2,2,2], activation="relu")

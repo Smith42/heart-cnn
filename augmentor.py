@@ -47,7 +47,7 @@ def augment(h_arr):
     print("After g blur: "+str(h_arr.shape))
     h_arr = np.concatenate((h_arr, rotate(h_arr))) # 4*16n = 64n
     print("After rotation: "+str(h_arr.shape))
-    h_arr = np.concatenate((h_arr, translate(h_arr))) # 17*64n = 1088n
+    h_arr = np.concatenate((h_arr, translate(h_arr))) # 16*64n = 1024n
     print("After translation: "+str(h_arr.shape))
     return h_arr
 
