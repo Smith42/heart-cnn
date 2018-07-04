@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 import h5py
 from sklearn.utils import shuffle as mutual_shuf
 
@@ -54,9 +55,9 @@ if __name__ == "__main__":
 
     h5f_temp = h5py.File("./data/temp_data.h5", "w") # This gets clobbered with each run
     aug_grp = h5f_temp.create_group("augs")
-    aug_grp.create_dataset("data", inData)
-    aug_grp.create_dataset("labels", inLabelsOH)
+    aug_grp.create_dataset("data", data=inData)
+    aug_grp.create_dataset("labels", data=inLabelsOH)
     real_grp = h5f_temp.create_group("reals")
-    real_grp.create_dataset("data", inData_test)
-    real_grp.create_dataset("labels", inLabelsOH_test)
+    real_grp.create_dataset("data", data=inData_test)
+    real_grp.create_dataset("labels", data=inLabelsOH_test)
     h5_temp.close()
