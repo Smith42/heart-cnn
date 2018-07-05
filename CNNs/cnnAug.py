@@ -54,11 +54,11 @@ if __name__ == "__main__":
 
     h5f = h5py.File("./data/temp_data.h5", "r")
     inData = h5f["augs/data"]
-    inLabelsOH = h5_aug["augs/labels"]
+    inLabelsOH = h5f["augs/labels"]
     print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
 
-    inData_test = h5f["reals/data"]
-    inLabelsOH_test = h5f["labels"]
+    inData_test = h5f["reals/data"][:]
+    inLabelsOH_test = h5f["reals/labels"][:]
     inLabels_test = inLabelsOH_test[:,1]
     print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
 
