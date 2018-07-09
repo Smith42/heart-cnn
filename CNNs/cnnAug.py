@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 import argparse
 import tensorflow as tf
-import tflearn
+import keras
 import horovod.tensorflow as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
@@ -41,13 +41,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Initialize Horovod
-    hvd.init()
+    #hvd.init()
 
-    # Pin GPU to be used to process local rank (one GPU per process)
-    config = tf.ConfigProto()
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
-
-    print("Hvd current rank:", str(hvd.local_rank()))
+    #print("Hvd current rank:", str(hvd.local_rank()))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)
@@ -66,34 +62,36 @@ if __name__ == "__main__":
     healthTest = inData_test[inLabels_test == 0]
 
     # Neural net (two-channel)
-    sess = tf.Session()
     model = getCNN(2) # 2 classes: healthy, ischaemia
-    hvd.broadcast_global_variables()
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Train the model, leaving out the kfold not being used
-    model.fit(inData, inLabelsOH, batch_size=100, n_epoch=30, show_metric=True)
-    dt = str(int(time.time()))
-    if hvd.rank() == 0:
-        model.save("./models/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data.tflearn")
+    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=2, epochs=30)
+    # dt = str(int(time.time()))
+    # if hvd.rank() == 0:
+    #     model.save("./models/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data.tflearn")
+    # # Pin GPU to be used to process local rank (one GPU per process)
+    # config = tf.ConfigProto()
+    # config.gpu_options.visible_device_list = str(hvd.local_rank())
 
-    # Get sensitivity and specificity
-    healthLabel = np.tile([1,0], (len(healthTest), 1))
-    illLabel = np.tile([0,1], (len(illTest), 1))
-    sens = model.evaluate(np.array(healthTest), healthLabel)
-    spec = model.evaluate(np.array(illTest), illLabel)
-    inData_test = np.concatenate((healthTest, illTest))
-    inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
+    # # Get sensitivity and specificity
+    # healthLabel = np.tile([1,0], (len(healthTest), 1))
+    # illLabel = np.tile([0,1], (len(illTest), 1))
+    # sens = model.evaluate(np.array(healthTest), healthLabel)
+    # spec = model.evaluate(np.array(illTest), illLabel)
+    # inData_test = np.concatenate((healthTest, illTest))
+    # inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
 
-    # Get roc curve data
-    predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
-    for j in np.arange(1, inLabels_test.shape[0]):
-        predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
+    # # Get roc curve data
+    # predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
+    # for j in np.arange(1, inLabels_test.shape[0]):
+    #     predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
 
-    fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
-    auc = roc_auc_score(inLabels_test, predicted[:,1])
+    # fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
+    # auc = roc_auc_score(inLabels_test, predicted[:,1])
 
-    print(spec[0], sens[0], auc)
-    savefileacc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-acc.log"
-    savefileroc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-roc.log"
-    np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
-    np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
+    # print(spec[0], sens[0], auc)
+    # savefileacc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-acc.log"
+    # savefileroc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-roc.log"
+    # np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
+    # np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
