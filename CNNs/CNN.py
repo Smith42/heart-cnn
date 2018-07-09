@@ -15,13 +15,13 @@ def getCNN(n_classes, observe=False):
     conv_0 = Conv3D(32, [4,4,4], strides=2,  activation="relu")(inp) # [16,16,16]
 
     # Second layer:
-    conv_1 = Conv3D(conv_0, 64, [4,4,4], strides=2, activation="relu")(conv_0) # [8,8,8]
+    conv_1 = Conv3D(64, [4,4,4], strides=2, activation="relu")(conv_0) # [8,8,8]
 
     # Third layer:
-    conv_2 = Conv3D(conv_1, 128, [2,2,2], activation="relu")(conv_1)
+    conv_2 = Conv3D(128, [2,2,2], activation="relu")(conv_1)
 
     # Fourth layer:
-    conv_3 = Conv3D(conv_2, 256, [2,2,2], activation="relu")(conv_2)
+    conv_3 = Conv3D(256, [2,2,2], activation="relu")(conv_2)
 
     # Global pooling layer:
     global_pool_0 = GlobalAveragePooling3D()(conv_3)
