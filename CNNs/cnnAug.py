@@ -6,7 +6,7 @@ import tensorflow as tf
 from keras.models import Model
 import keras
 from keras import backend as K
-import horovod.tensorflow as hvd
+import horovod.keras as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Neural net (two-channel)
     model = getCNN(2) # 2 classes: healthy, ischaemia
-    opt = keras.optimizers.Adam(lr=0.001)
+    opt = keras.optimizers.Adam(lr=0.001*hvd.size())
     opt = hvd.DistributedOptimizer(opt)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -86,37 +86,34 @@ if __name__ == "__main__":
         # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
         hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=1),
         # Reduce the learning rate if training plateaues.
-        keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
+        #keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
+        # Checkpoint data
+        ModelCheckpoint(filepath="./models/"+str(args.SEED)+"-"+str(args.i)+"-augment_data.h5", verbose=1, save_best_only=True, period=5) if hvd.rank() == 0 else None
     ]
 
 
     # Train the model, leaving out the kfold not being used
-    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=1, callbacks=cb, epochs=30)
-
-    # dt = str(int(time.time()))
-    # if hvd.rank() == 0:
-    #     model.save("./models/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data.tflearn")
-    # # Pin GPU to be used to process local rank (one GPU per process)
-    # config = tf.ConfigProto()
-    # config.gpu_options.visible_device_list = str(hvd.local_rank())
+    dt = str(int(time.time()))
+    n_epochs = 10
+    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=1, callbacks=cb, epochs=n_epochs, shuffle='batch')
 
     # # Get sensitivity and specificity
-    # healthLabel = np.tile([1,0], (len(healthTest), 1))
-    # illLabel = np.tile([0,1], (len(illTest), 1))
-    # sens = model.evaluate(np.array(healthTest), healthLabel)
-    # spec = model.evaluate(np.array(illTest), illLabel)
-    # inData_test = np.concatenate((healthTest, illTest))
-    # inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
+    healthLabel = np.tile([1,0], (len(healthTest), 1))
+    illLabel = np.tile([0,1], (len(illTest), 1))
+    sens = model.evaluate(np.array(healthTest), healthLabel)
+    spec = model.evaluate(np.array(illTest), illLabel)
+    inData_test = np.concatenate((healthTest, illTest))
+    inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
 
-    # # Get roc curve data
-    # predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
-    # for j in np.arange(1, inLabels_test.shape[0]):
-    #     predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
+    # Get roc curve data
+    predicted = model.predict(inData_test[0][np.newaxis,...]) # Dirty hack to save memory..
+    for j in np.arange(1, inLabels_test.shape[0]):
+        predicted = np.append(predicted, model.predict(inData_test[j][np.newaxis,...]), axis=0)
 
-    # fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
-    # auc = roc_auc_score(inLabels_test, predicted[:,1])
+    fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
+    auc = roc_auc_score(inLabels_test, predicted[:,1])
 
-    # print(spec[0], sens[0], auc)
+    print(spec[0], sens[0], auc)
     # savefileacc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-acc.log"
     # savefileroc = "./logs/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data-roc.log"
     # np.savetxt(savefileacc, (spec[0],sens[0],auc), delimiter=",")
