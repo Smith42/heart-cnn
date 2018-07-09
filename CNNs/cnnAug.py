@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 import argparse
 import tensorflow as tf
-import keras
+from keras.models import Model
 import horovod.tensorflow as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
