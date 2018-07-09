@@ -4,6 +4,8 @@ import numpy as np
 import argparse
 import tensorflow as tf
 from keras.models import Model
+import keras
+from keras import backend as K
 import horovod.tensorflow as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
@@ -41,9 +43,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Initialize Horovod
-    #hvd.init()
+    hvd.init()
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+    K.set_session(tf.Session(config=config))
 
-    #print("Hvd current rank:", str(hvd.local_rank()))
+    print("Hvd current rank:", str(hvd.local_rank()))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)
@@ -63,10 +69,30 @@ if __name__ == "__main__":
 
     # Neural net (two-channel)
     model = getCNN(2) # 2 classes: healthy, ischaemia
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    opt = keras.optimizers.Adam(lr=0.001)
+    opt = hvd.DistributedOptimizer(opt)
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+
+    # callbacks
+    cb = [
+        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+        # Horovod: average metrics among workers at the end of every epoch.
+        #
+        # Note: This callback must be in the list before the ReduceLROnPlateau,
+        # TensorBoard or other metrics-based callbacks.
+        hvd.callbacks.MetricAverageCallback(),
+        # Horovod: using `lr = 1.0 * hvd.size()` from the very beginning leads to worse final
+        # accuracy. Scale the learning rate `lr = 1.0` ---> `lr = 1.0 * hvd.size()` during
+        # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
+        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=1),
+        # Reduce the learning rate if training plateaues.
+        keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
+    ]
+
 
     # Train the model, leaving out the kfold not being used
-    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=2, epochs=30)
+    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=1, callbacks=cb, epochs=30)
+
     # dt = str(int(time.time()))
     # if hvd.rank() == 0:
     #     model.save("./models/"+dt+"s"+str(args.SEED)+"-"+str(args.i)+"-augment_data.tflearn")
