@@ -7,7 +7,7 @@ from keras.models import Model
 import keras
 import os
 from keras import backend as K
-import horovod.keras as hvd
+#import horovod.keras as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -41,9 +41,32 @@ if __name__ == "__main__":
     parser.add_argument(type=int, dest="i", help="Current testing k-fold.")
     parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5).")
     parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
-    args = parser.parse_args()
 
-    # Initialize Horovod
+    # Initialise data
+    args = parser.parse_args()
+    np.random.seed(args.SEED)
+    h5_aug = h5py.File("./data/aug_data.h5", "r")
+    num_ars = h5_aug["in_labels"].shape[0]
+    current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
+    inData = h5_aug["in_data"]
+    indices = h5_aug["indices"]
+
+    # Get indexes for the augmented array's current folds
+    ro_folds_i = np.squeeze(np.concatenate([np.where(indices == index) for index in ro_folds], axis=-1))
+    print(ro_folds_i)
+    exit()
+    print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
+
+    h5_real = h5py.File("./data/real_data.h5", "r")
+    inData_test = h5_real["in_data"][current_fold]
+    inLabelsOH_test = h5f_real["in_labels"][current_fold]
+    inLabels_test = inLabelsOH_test[:,1]
+    print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
+
+    illTest = inData_test[inLabels_test == 1]
+    healthTest = inData_test[inLabels_test == 0]
+
+    # Initialise Horovod
     hvd.init()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -54,19 +77,6 @@ if __name__ == "__main__":
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
     np.random.seed(args.SEED)
-
-    h5f = h5py.File("./data/temp_data.h5", "r")
-    inData = h5f["augs/data"]
-    inLabelsOH = h5f["augs/labels"]
-    print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
-
-    inData_test = h5f["reals/data"][:]
-    inLabelsOH_test = h5f["reals/labels"][:]
-    inLabels_test = inLabelsOH_test[:,1]
-    print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
-
-    illTest = inData_test[inLabels_test == 1]
-    healthTest = inData_test[inLabels_test == 0]
 
     # Neural net (two-channel)
     model = getCNN(2) # 2 classes: healthy, ischaemia
