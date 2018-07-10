@@ -64,8 +64,10 @@ if __name__ == "__main__":
         print("Total array shape: "+str(aug_arr.shape)+"\n")
 
     aug_indices = np.repeat(np.arange(examples.shape[0]), aug_arr.shape[1])
+    labelsOH = np.repeat(labelsOH, aug_arr.shape[1], axis=0)
     aug_arr = np.reshape(aug_arr, [-1,aug_arr.shape[2],aug_arr.shape[3],aug_arr.shape[4],aug_arr.shape[5]])
     print("Total array shape:"+str(aug_arr.shape)+"\n")
+    print("Total label shape:"+str(labelsOH.shape)+"\n")
 
     with h5py.File("./data/aug_data.h5") as hf:
         hf.create_dataset("in_data", data=aug_arr)
