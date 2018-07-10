@@ -10,6 +10,7 @@ from keras import backend as K
 import horovod.keras as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, roc_auc_score
 from CNN import getCNN
 import h5py
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     epochs = 6
     n_batches = len(indices) // batch_size
-    steps_per_epoch = n_batches // hvd.size()
+    steps_per_epoch = n_batches
 
     # callbacks
     cb = [
@@ -147,12 +148,18 @@ if __name__ == "__main__":
     if hvd.rank() == 0:
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=4))
+        cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=6))
         cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
 
 
     # Train the model, leaving out the kfold not being used
-    model.fit_generator(Aug_Generator(inData, inLabelsOH, ro_folds_i, batch_size=batch_size), steps_per_epoch=steps_per_epoch, verbose=1, callbacks=cb, epochs=epochs)
+    train_ind, test_ind = train_test_split(ro_folds_i, test_size=0.1, shuffle=False)
+    batch_size = args.batch_size
+    epochs = 6
+    n_test_batches = len(test_ind) // batch_size
+    n_train_batches = len(train_ind) // batch_size
+
+    model.fit_generator(Aug_Generator(inData, inLabelsOH, train_ind, batch_size=batch_size), steps_per_epoch=n_train_batches, validation_data=Aug_Generator(inData, inLabelsOH, test_ind, batch_size=batch_size), validation_steps=n_test_batches, verbose=2, callbacks=cb, epochs=epochs)
 
     # Get sensitivity and specificity
     if hvd.rank() == 0:

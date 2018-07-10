@@ -127,7 +127,7 @@ if __name__ == "__main__":
     logdir = "./logs/s"+str(args.SEED)+"/"
     if not os.path.exists(logdir):
         os.makedirs(logdir)
-    cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=4))
+    cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=6))
     cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
 
     # Train the model, leaving out the kfold not being used
