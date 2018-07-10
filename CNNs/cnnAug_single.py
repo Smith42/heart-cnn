@@ -7,7 +7,6 @@ from keras.models import Model
 import keras
 import os
 from keras import backend as K
-import horovod.keras as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -103,39 +102,25 @@ if __name__ == "__main__":
     illTest = inData_test[inLabels_test == 1]
     healthTest = inData_test[inLabels_test == 0]
 
-    # Initialise Horovod
-    hvd.init()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
     K.set_session(tf.Session(config=config))
 
-    print("Hvd current rank:", str(hvd.local_rank()))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
 
     # Neural net (two-channel)
     model = getCNN(2) # 2 classes: healthy, ischaemia
-    opt = keras.optimizers.Adam(lr=0.001*hvd.size())
-    opt = hvd.DistributedOptimizer(opt)
+    opt = keras.optimizers.Adam(lr=0.001)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     batch_size = args.batch_size
     epochs = 6
     n_batches = len(indices) // batch_size
-    steps_per_epoch = n_batches // hvd.size()
+    steps_per_epoch = n_batches
 
     # callbacks
     cb = [
-        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
-        # Horovod: average metrics among workers at the end of every epoch.
-        # Note: This callback must be in the list before the ReduceLROnPlateau,
-        # TensorBoard or other metrics-based callbacks.
-        hvd.callbacks.MetricAverageCallback(),
-        # Horovod: using `lr = 1.0 * hvd.size()` from the very beginning leads to worse final
-        # accuracy. Scale the learning rate `lr = 1.0` ---> `lr = 1.0 * hvd.size()` during
-        # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
-        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=3, verbose=1),
         # Reduce the learning rate if training plateaues.
         keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
     ]
@@ -144,34 +129,32 @@ if __name__ == "__main__":
     # set up logdir
     filestr = str(dt+"-"+str(args.i))
     logdir = "./logs/s"+str(args.SEED)+"/"
-    if hvd.rank() == 0:
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=4))
-        cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+    cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=4))
+    cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
 
 
     # Train the model, leaving out the kfold not being used
     model.fit_generator(Aug_Generator(inData, inLabelsOH, ro_folds_i, batch_size=batch_size), steps_per_epoch=steps_per_epoch, verbose=1, callbacks=cb, epochs=epochs)
 
     # Get sensitivity and specificity
-    if hvd.rank() == 0:
-        healthLabel = np.tile([1,0], (len(healthTest), 1))
-        illLabel = np.tile([0,1], (len(illTest), 1))
-        sens = model.evaluate(x=np.array(healthTest), y=healthLabel, verbose=0, batch_size=1)[1] # Get accuracy
-        spec = model.evaluate(x=np.array(illTest), y=illLabel, verbose=0, batch_size=1)[1] # Get accuracy
-        inData_test = np.concatenate((healthTest, illTest))
-        inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
+    healthLabel = np.tile([1,0], (len(healthTest), 1))
+    illLabel = np.tile([0,1], (len(illTest), 1))
+    sens = model.evaluate(x=np.array(healthTest), y=healthLabel, verbose=0, batch_size=1)[1] # Get accuracy
+    spec = model.evaluate(x=np.array(illTest), y=illLabel, verbose=0, batch_size=1)[1] # Get accuracy
+    inData_test = np.concatenate((healthTest, illTest))
+    inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
 
     # Get roc curve data
-        predicted = model.predict(inData_test, verbose=0, batch_size=1)
+    predicted = model.predict(inData_test, verbose=0, batch_size=1)
 
-        fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
-        auc = roc_auc_score(inLabels_test, predicted[:,1])
+    fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
+    auc = roc_auc_score(inLabels_test, predicted[:,1])
 
-        print(spec, sens, auc)
+    print(spec, sens, auc)
 
-        savefileacc = logdir+filestr+"-acc.log"
-        savefileroc = logdir+filestr+"-roc.log"
-        np.savetxt(savefileacc, (spec,sens,auc), delimiter=",")
-        np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
+    savefileacc = logdir+filestr+"-acc.log"
+    savefileroc = logdir+filestr+"-roc.log"
+    np.savetxt(savefileacc, (spec,sens,auc), delimiter=",")
+    np.savetxt(savefileroc, (fpr,tpr,th), delimiter=",")
