@@ -75,20 +75,20 @@ if __name__ == "__main__":
     # Initialise data
     args = parser.parse_args()
     np.random.seed(args.SEED)
-    h5_aug = h5py.File("./data/aug_data.h5", "r")
-    num_ars = h5_aug["in_labels"].shape[0]
+    h5f_aug = h5py.File("./data/aug_data.h5", "r")
+    num_ars = h5f_aug["in_labels"].shape[0]
     current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
-    inData = h5_aug["in_data"]
-    inLabelsOH = h5_aug["in_labels"]
-    indices = h5_aug["indices"][:]
+    inData = h5f_aug["in_data"]
+    inLabelsOH = h5f_aug["in_labels"]
+    indices = h5f_aug["indices"][:]
 
     # Get indexes for the augmented array's current folds
     ro_folds_i = np.squeeze(np.concatenate([np.where(indices == index) for index in ro_folds], axis=-1))
     np.random.shuffle(ro_folds_i)
     print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
 
-    h5_real = h5py.File("./data/real_data.h5", "r")
-    inData_test = h5_real["in_data"][current_fold]
+    h5f_real = h5py.File("./data/real_data.h5", "r")
+    inData_test = h5f_real["in_data"][current_fold]
     inLabelsOH_test = h5f_real["in_labels"][current_fold]
     inLabels_test = inLabelsOH_test[:,1]
     print("Real (test) data in:", str(inData_test.shape), str(inLabelsOH_test.shape))
