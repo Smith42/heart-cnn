@@ -15,6 +15,36 @@ from CNN import getCNN
 import h5py
 import time
 
+class Aug_Generator(keras.utils.Sequence):
+    def __init__(self, cubes, labels, indices, batch_size=100, shuffle=False):
+        """ Initialization """
+        self.batch_size = batch_size
+        self.labels = labels
+        self.cubes = cubes
+        self.indices = indices
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        """ Denotes the number of batches per epoch """
+        return int(np.floor(len(self.indices) / self.batch_size))
+
+    def __getitem__(self, index):
+        """ Generate one batch of data """
+        # Generate indexes of the batch
+        current_indices = self.indices[index*self.batch_size:(index+1)*self.batch_size]
+
+        # Get np array from HDF5 file
+        X = self.cubes[current_indices]
+        y = self.labels[current_indices]
+
+        return X, y
+
+    def on_epoch_end(self):
+        'Updates indexes after each epoch'
+        if self.shuffle == True:
+            np.random.shuffle(self.indices)
+
 def gen_folds(num_ars, i, k):
     """ Generate fold pointer arrays given number of total data cubes """
     k_arr = np.arange(k)
@@ -49,12 +79,12 @@ if __name__ == "__main__":
     num_ars = h5_aug["in_labels"].shape[0]
     current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
     inData = h5_aug["in_data"]
-    indices = h5_aug["indices"]
+    inLabelsOH = h5_aug["in_labels"]
+    indices = h5_aug["indices"][:]
 
     # Get indexes for the augmented array's current folds
     ro_folds_i = np.squeeze(np.concatenate([np.where(indices == index) for index in ro_folds], axis=-1))
-    print(ro_folds_i)
-    exit()
+    np.random.shuffle(ro_folds_i)
     print("Augmented data in:", str(inData.shape), str(inLabelsOH.shape))
 
     h5_real = h5py.File("./data/real_data.h5", "r")
@@ -112,8 +142,10 @@ if __name__ == "__main__":
 
 
     # Train the model, leaving out the kfold not being used
-    n_epochs = int(np.ceil(30 / hvd.size()))
-    model.fit(x=inData, y=inLabelsOH, batch_size=100, verbose=2, callbacks=cb, epochs=n_epochs, shuffle='batch')
+    #n_epochs = int(np.ceil(30 / hvd.size()))
+    n_batches = len(inLabelsOH) // 100
+    steps_per_epoch = n_batches // hvd.size()
+    model.fit_generator(Aug_Generator(inData, inLabelsOH, indices), steps_per_epoch=steps_per_epoch, verbose=2, callbacks=cb)
 
     # Get sensitivity and specificity
     if hvd.rank() == 0:
