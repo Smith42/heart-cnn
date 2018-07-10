@@ -7,7 +7,7 @@ from keras.models import Model
 import keras
 import os
 from keras import backend as K
-#import horovod.keras as hvd
+import horovod.keras as hvd
 import sklearn
 from sklearn.utils import shuffle as mutual_shuf
 from sklearn.metrics import roc_curve, roc_auc_score
@@ -114,6 +114,9 @@ if __name__ == "__main__":
     opt = hvd.DistributedOptimizer(opt)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
+    n_batches = len(inLabelsOH) // 100
+    steps_per_epoch = n_batches // hvd.size()
+
     # callbacks
     cb = [
         hvd.callbacks.BroadcastGlobalVariablesCallback(0),
@@ -125,7 +128,7 @@ if __name__ == "__main__":
         # Horovod: using `lr = 1.0 * hvd.size()` from the very beginning leads to worse final
         # accuracy. Scale the learning rate `lr = 1.0` ---> `lr = 1.0 * hvd.size()` during
         # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
-        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=3, verbose=1),
+        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=3, verbose=1, steps_per_epoch=steps_per_epoch),
         # Reduce the learning rate if training plateaues.
         #keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
     ]
@@ -143,8 +146,6 @@ if __name__ == "__main__":
 
     # Train the model, leaving out the kfold not being used
     #n_epochs = int(np.ceil(30 / hvd.size()))
-    n_batches = len(inLabelsOH) // 100
-    steps_per_epoch = n_batches // hvd.size()
     model.fit_generator(Aug_Generator(inData, inLabelsOH, indices), steps_per_epoch=steps_per_epoch, verbose=2, callbacks=cb)
 
     # Get sensitivity and specificity
