@@ -14,7 +14,9 @@ from CNN import getCNN
 import argparse
 import time
 import tensorflow as tf
-import tflearn
+import keras
+from keras import backend as K
+from keras.models import load_model
 
 def getLoss(inData, inLabel, maskWidth, j, k, l):
     """
@@ -90,15 +92,14 @@ if __name__ == "__main__":
     else:
         # Use user's participant
         ppt = args.participant
-    print("Participant:",ppt) 
+    print("Participant:",ppt)
 
     #inData = np.load("./data/shufData.npy")[ppt]
 
     inData = h5f["in_data"][ppt]
     inData = inData[np.newaxis,...]
 
-    model, conv_3 = getCNN(2, observe=True)
-    model.load(args.model_path)
+    model = load_model(args.model_path)
 
     predLabel = model.predict(inData)[:,1]
 
@@ -116,14 +117,14 @@ if __name__ == "__main__":
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_lossCube_occlusion_map", lossCube)
 
     if args.cam:
-        observer = tflearn.DNN(conv_3, session=model.session)
-        weights = model.get_weights(tflearn.variables.get_layer_variables_by_name('FullyConnected')[0])
+        observer = K.function([model.layers[0].input], [model.layers[4].output]) ### Test!!!!
+        weights = model.layers[-1].get_weights()[0]
         intLabel = int(np.rint(predLabel))
         weights = relu(weights[:,intLabel])
 
-        observed = relu(observer.predict(inData)[0])
-        lossCube = np.pad(np.tensordot(weights, observed, axes=[0,-1]), [1,0], "constant")[:-1,:-1,:-1] # This padding is needed due to the precision loss in convolution
-        lossCube = scipy.ndimage.interpolation.zoom(lossCube, 34.0/np.amax(lossCube.shape)) # The int here is dependent on the pooling in the CNN
+        observed = relu(observer(inData)[0])
+        lossCube = np.tensordot(weights, observed, axes=[0,-1]) # Do i need padding? check!
+        lossCube = scipy.ndimage.interpolation.zoom(lossCube, 32.0/np.amax(lossCube.shape)) # The int here is dependent on the pooling in the CNN
         np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_lossCube_cam_map", lossCube)
 
     np.save("./logs/lossCubes/"+dt+"_ppt-"+str(ppt)+"_"+str(maskWidth)+"_heartCube-rest", inData[0][...,0])

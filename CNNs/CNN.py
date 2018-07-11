@@ -2,7 +2,7 @@ import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input, Conv3D, GlobalAveragePooling3D, Dense
 
-def getCNN(n_classes, observe=False):
+def getCNN(n_classes):
     """
         This is the current working CNN.
         classes is the number of classes (neurons in the final softmax layer) to be processed.
