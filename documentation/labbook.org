@@ -974,3 +974,27 @@ Model 1527712130 (Simulated data with GAN) has (at 5 epochs), compared to model 
 - augmentor is redone so that we get an output [58,1024,32,32,32,2]. 
     This keeps the augmented data in bins of similarity.
 - Will think of a nice way to mix the data (+kfolds).
+
+** 2018-07-02 BETTER WAY TO KFOLD
+- Better way to kfold is a-go. We k-fold by using fancy indexing on both the original data, and the augmented data at the same time.
+  - This may be an issue if the augmented data gets much larger but for now, on Ramius, we are doing okay (~30GB RAM needed).
+- It may be a good idea to use many seeds for testing (~50?). This would give a more representative result.
+- If I get parallel TF working this could be done fairly quickly.
+
+** 2018-07-03
+- Open-MPI looks like a good parallelisation method but I cannot get this working on gpu1.
+- If I do get it working, Horovod looks like a good shout.
+- HOROVOD IS UP AND RUNNING!!! -- I will adapt my cnn for horovod
+  - It was an installation error on my part (NCCL 2 was not installed, and cuda aware openmpi was installed after horovod!)
+    Full installation instructions are in my notebook.
+
+*** Horovod results for MNIST example
+
+    | No GPUS | Global step/sec | Scaling efficiency | Total time | Scaling efficiency |
+    |---------+-----------------+--------------------+------------+--------------------|
+    |       1 |              90 |                  1 |        238 |                  1 |
+    |       2 |             140 |               0.78 |        155 |               0.76 |
+    |       3 |             210 |               0.78 |        113 |               0.70 |
+    |       4 |             280 |               0.78 |         90 |               0.66 |
+    |       5 |             300 |               0.67 |         85 |               0.56 |
+    |       6 |             360 |               0.67 |         76 |               0.52 |

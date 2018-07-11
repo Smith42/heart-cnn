@@ -1,16 +1,10 @@
-Using CNNs to detect heart disease in SPECT images
-==================================================
+# Using CNNs to detect heart disease in SPECT images
 
 A three dimensional two-channel convolutional neural network (CNN) has been used to diagnose simulated single-photon emission computed tomography (SPECT) scans of diseased and healthy hearts. An accuracy of 0.464 is achieved over five classes (Normal, Ischaemic, Infarcted, Mixed, and Artefacted). The ROC AUC of all healthy vs all unhealthy classes is 0.826. Additionally, the trained CNN has been shown to generalise to SPECT scans of real patients. A brief overview of the algorithm used is below.
 
-* Preprocess data: cut and reshape incoming data to a two-channel 3D array of shape `[34,34,34,2]`.
+* Preprocess data: cut and reshape incoming data to a two-channel 3D array of shape `[32,32,32,2]`.
 * Train CNN: train and validate two-channel CNN on simulated SPECT scans.
 * Finetune CNN: hold all but the final two fully connected layers static, and continue training CNN on real SPECT scans.
 * Visualise diagnosticity: generate a diagnostic map by setting a section of a scan to zero and finding the relative diagnosticity of this new scan. The zeroed area is moved, and the process is repeated until the zeroed section reaches the end of the scan.
 
 Please see the full report for a more detailed explanation of the algorithm.
-
-Usage
-=====
-
-Input data is converted into a hdf5 file with dataProcessAll and dataProcess. CNN training scripts are stored in the CNN directory. The master CNN is named CNN.py and is also in the CNN directory. The training scripts all reference this CNN. After the training scripts generate output, the ROC curves and other statistical data can be generated via postproc.ipynb. The lossCube directory holds the script for visualising diagnosticity.
