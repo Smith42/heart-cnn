@@ -123,7 +123,7 @@ if __name__ == "__main__":
     dt =str(int(time.time()))
 
     # set up logdir
-    filestr = str(dt+"-"+str(args.i))
+    filestr = str("k-equals-"+str(args.i))
     logdir = "./logs/s"+str(args.SEED)+"/"
     if not os.path.exists(logdir):
         os.makedirs(logdir)
