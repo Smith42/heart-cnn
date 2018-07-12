@@ -73,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5).")
     parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
     parser.add_argument("-b", "--batch_size", nargs="?", type=int, const=248, default=248, dest="batch_size", help="Batch size (small batch sizes throttle speed due to slow h5py data loading).")
+    parser.add_argument("-d", "--dist", nargs="?", type=int, const=0, default=0, dest="dist", help="Distributed TensorFlow via Horovod (1 if True, default 0).")
 
     # Initialise data
     args = parser.parse_args()
@@ -105,52 +106,51 @@ if __name__ == "__main__":
     healthTest = inData_test[inLabels_test == 0]
 
     # Initialise Horovod
-    hvd.init()
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
-    K.set_session(tf.Session(config=config))
+    if args.dist:
+        print("Initialising Horovod")
+        hvd.init()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
+        K.set_session(tf.Session(config=config))
 
-    print("Hvd current rank:", str(hvd.local_rank()))
+        print("Hvd current rank:", str(hvd.local_rank()))
     print("Seed:", str(args.SEED))
     print("Current kfold:", str(args.i), "of", str(args.k-1))
 
     # Neural net (two-channel)
     model = getCNN(2) # 2 classes: healthy, ischaemia
-    opt = keras.optimizers.Adam(lr=0.001*hvd.size())
-    opt = hvd.DistributedOptimizer(opt)
+    if args.dist:
+        opt = keras.optimizers.Adam(lr=0.001*hvd.size())
+        opt = hvd.DistributedOptimizer(opt)
+    else:
+        opt = keras.optimizers.Adam(lr=0.001)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
-    batch_size = args.batch_size
-    epochs = 6
-    n_batches = len(indices) // batch_size
-    steps_per_epoch = n_batches
-
     # callbacks
-    cb = [
-        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+    cb = []
+    if args.dist:
+        cb.append(hvd.callbacks.BroadcastGlobalVariablesCallback(0))
         # Horovod: average metrics among workers at the end of every epoch.
         # Note: This callback must be in the list before the ReduceLROnPlateau,
         # TensorBoard or other metrics-based callbacks.
-        hvd.callbacks.MetricAverageCallback(),
+        cb.append(hvd.callbacks.MetricAverageCallback())
         # Horovod: using `lr = 1.0 * hvd.size()` from the very beginning leads to worse final
         # accuracy. Scale the learning rate `lr = 1.0` ---> `lr = 1.0 * hvd.size()` during
         # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
-        hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=3, verbose=1),
-        # Reduce the learning rate if training plateaues.
-        keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1),
-    ]
+        #cb.append(hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=1))
+    # Reduce the learning rate if training plateaues.
+    cb.append(keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1))
     dt =str(int(time.time()))
 
     # set up logdir
     filestr = str("k-equals-"+str(args.i))
     logdir = "./logs/s"+str(args.SEED)+"/"
-    if hvd.rank() == 0:
+    if not args.dist or hvd.rank() == 0:
         if not os.path.exists(logdir):
             os.makedirs(logdir)
         cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=6))
         cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
-
 
     # Train the model, leaving out the kfold not being used
     train_ind, test_ind = train_test_split(ro_folds_i, test_size=0.1, shuffle=False)
@@ -158,11 +158,10 @@ if __name__ == "__main__":
     epochs = 6
     n_test_batches = len(test_ind) // batch_size
     n_train_batches = len(train_ind) // batch_size
-
     model.fit_generator(Aug_Generator(inData, inLabelsOH, train_ind, batch_size=batch_size), steps_per_epoch=n_train_batches, validation_data=Aug_Generator(inData, inLabelsOH, test_ind, batch_size=batch_size), validation_steps=n_test_batches, verbose=2, callbacks=cb, epochs=epochs)
 
     # Get sensitivity and specificity
-    if hvd.rank() == 0:
+    if not args.dist or hvd.rank() == 0:
         healthLabel = np.tile([1,0], (len(healthTest), 1))
         illLabel = np.tile([0,1], (len(illTest), 1))
         sens = model.evaluate(x=np.array(healthTest), y=healthLabel, verbose=0, batch_size=1)[1] # Get accuracy
