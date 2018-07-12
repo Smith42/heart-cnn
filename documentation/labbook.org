@@ -45,7 +45,7 @@
 
 *Got some results using 2D slices:* 
 - The 2D slices I used look like:
-[[../figures/pics/fCalmX.png][2D slice data example]]
+[[../figures/pics/fCalmX.png]]
 - I have used 2d slices of the data and it works well (halfway 
   through the z-axis). It uses: 
   - Slice of rest and slice of stress on z axis.
@@ -60,10 +60,10 @@
 - The k=10-fold x-validation shows that the CNN is learning the noise
   in the data, although this could be due to the small amount of images
   in each k-fold (only 6!):
-    [[../figures/rocCurves/2017-07-05_14:37:00-2dsliceCNN.png][ROC curve from 2D slice CNN 2017-07-05]]
+    [[../figures/rocCurves/2017-07-05_14:37:00-2dsliceCNN.png]]
 - I tried normalising the arrays, with no luck. It stopped overfitting
   the data, but still hasn't learnt significantly:
-  [[../figures/rocCurves/2017-07-05_15:30:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
+  [[../figures/rocCurves/2017-07-05_15:30:00-2dsliceCNN.png]]
 - I think the issue is still the massive amount of blankspace. I should
   try and scale the arrays so that they are the same size.
 
@@ -79,9 +79,9 @@
   - Avg Spec: 0.583, 0.623, 0.663 
   - Avg Sens: 0.633, 0.683, 0.700 
   - ROC curves:
-[[..igures/rocCurves/2017-07-05_16:31:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
-[[../figures/rocCurves/2017-07-06_09:55:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-06]]
-[[../figures/rocCurves/2017-07-06_10:20:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-06]]
+[[..igures/rocCurves/2017-07-05_16:31:00-2dsliceCNN.png]]
+[[../figures/rocCurves/2017-07-06_09:55:00-2dsliceCNN.png]]
+[[../figures/rocCurves/2017-07-06_10:20:00-2dsliceCNN.png]]
 
 ** 2017-07-06 SCALING AND RESIZING
 
@@ -89,7 +89,7 @@
   axes. It will take ~100 mins to finish learning. It's probably time
   to use some better hardware.
 - Found a function
-  [[https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.zoom.html][]]
+  [[https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.zoom.html]]
   which should work well for resizing the images.
 - Maybe the reason that the slicing works, and the 3D data doesn't is
   because the CNN filter only sees one 3D image at a time, and sees
@@ -123,11 +123,11 @@
      x-entropy loss; batch size = 10 at 38 datum; k = 3 folds.
 
       - non-scaled:
-        [[../figures/rocCurves/2017-07-07_11:34:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
+        [[../figures/rocCurves/2017-07-07_11:34:00-2dsliceCNN.png]]
       - scaled:
-        [[../figures/rocCurves/2017-07-07_11:50:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
+        [[../figures/rocCurves/2017-07-07_11:50:00-2dsliceCNN.png]]
       - scaled, not renormalised:
-        [[../figures/rocCurves/2017-07-07_13:41:00-2dsliceCNN.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
+        [[../figures/rocCurves/2017-07-07_13:41:00-2dsliceCNN.png]]
 
 - As shown in the ROC curves, the only data that is causing consistent
   learning is the non-scaled one. I don't know why.
@@ -142,7 +142,7 @@
    - I have written CNNs using two-channel, and Siamese architectures,
      along with the OG 3D convolution architecture. The two-channel and
      Siamese architectures are described here:
-     [[https://arxiv.org/pdf/1504.03641.pdf][]].
+     [[https://arxiv.org/pdf/1504.03641.pdf]].
 
 - The use of a very deep NN architecture would reduce linearity, and
   may be useful.
@@ -155,8 +155,8 @@
    - ROC AUC: 0.918, 0.940
    - This is with the two-channel architecture. ROC curves:
 
-      - [[../figures/rocCurves/2017-07-10_13:16:00-2dsliceCNN.png][ROC curve from expanded data two-channel CNN 2017-07-10]]
-      - [[../figures/rocCurves/2017-07-10_13:49:00-2dsliceCNN.png][ROC curve from expanded data two-channel CNN 2017-07-10 second repeat]]
+      - [[../figures/rocCurves/2017-07-10_13:16:00-2dsliceCNN.png]]
+      - [[../figures/rocCurves/2017-07-10_13:49:00-2dsliceCNN.png]]
 
 - Haven't got any significant results from the Siamese CNN, but have
   only trained it to ~30 epochs. It will probably need more training
@@ -175,7 +175,7 @@
 
    - It doesn't work very well. Getting ~50% accuracy.
 
-      - [[../figures/rocCurves/2017-07-11_14:20:00-2dsliceCNN.png][ROC curve from exp data 2-channel (different ppts in each k-fold) CNN 2017-07-11]]
+      - [[../figures/rocCurves/2017-07-11_14:20:00-2dsliceCNN.png]]
 
 - More data would be helpful to reduce overfitting, but using all three
   dimensions of the heart data may be enough to get "good enough"
@@ -222,13 +222,13 @@
 - Looks like that was what the issue was. The CNN got lucky with the
   cubes taken out for testing:
 
-   - [[../figures/rocCurves/2017-07-14_10:18:00-3dCNN-nok.png][ROC curve from 2-channel 3D CNN 2017-07-14]]
-   - [[../figures/rocCurves/2017-07-14_10:48:00-3dCNN-nok.png][ROC curve from 2-channel 3D CNN 2017-07-14]]
+   - [[../figures/rocCurves/2017-07-14_10:18:00-3dCNN-nok.png]]
+   - [[../figures/rocCurves/2017-07-14_10:48:00-3dCNN-nok.png]]
 
 - Using fake data to train a CNN. It's found on =/data/jim/Heart/sims=.
 - The CNNs aren't training. For normal/infarction data I have the loss
   decreasing but the accuracy is static.
-  [[https://www.reddit.com/r/cs231n/comments/4p12oc/what_does_it_mean_when_the_loss_is_decreasing/][]]
+  [[https://www.reddit.com/r/cs231n/comments/4p12oc/what_does_it_mean_when_the_loss_is_decreasing/]]
   < It looks like it is due to the CNN training well on "easy"
   examples.
 
@@ -246,14 +246,14 @@
   ~70%. This is promising. Maybe the CNN just needs a while to learn?
 - Got this:
 
-   - [[./figures/rocCurves/2017-07-24_14:43:00-3dCNNfakedata.png][ROC curve with new normalisation routine 2017-07-24]]
+   - [[./figures/rocCurves/2017-07-24_14:43:00-3dCNNfakedata.png]]
 
 - Running again with 400 epochs. Taking ~20 min per k-fold of 100 ppts.
   I should try this with the full dataset. It will take a long time (~7
   hours), so if this works I'll run overnight.
 - Got this for 400 epochs:
 
-   - [[./figures/rocCurves/2017-07-24_15:39:00-3dCNNfakedata.png][ROC curve with new normalisation routine (400 epoch) 2017-07-24]]
+   - [[./figures/rocCurves/2017-07-24_15:39:00-3dCNNfakedata.png]]
 
 - Set up a job for overnight. We'll see how it does tomorrow.
 
@@ -286,7 +286,7 @@
   validation accuracy around the same (mean AUC = 0.54). I'll try again
   with less regularisation (it may be underfitting).
 
-   - [[../figures/rocCurves/2017-07-26_12:59:00-3dCNNfakedat500epoch.png][ROC curve from normalised 2D slice CNN 2017-07-05]]
+   - [[../figures/rocCurves/2017-07-26_12:59:00-3dCNNfakedat500epoch.png]]
 
 - Rewrote cnn.py so that the logging is more transparent (in plaintext
   after each k-fold).
@@ -336,7 +336,7 @@
 - Results from last run have an average specificity of 0.54, and an
   average sensitivity of 0.62. The AUC average is 0.60.
 
-  - [[../figures/rocCurves/2017-07-27_09:45:00-3dCNN2chfakedata.png][ROC curve from less regularised CNN 2017-07-26]]
+  - [[../figures/rocCurves/2017-07-27_09:45:00-3dCNN2chfakedata.png]]
 
 - This is with
 
@@ -393,7 +393,7 @@
 - Latest CNN results:
 
   - AVG spec 0.62, AVG sens 0.61, AVG AUC 0.66. (Over k=3 folds).
-  - [[../figures/rocCurves/2017-07-27_18:04:00-3dCNN2chfakedata.png][ROC curve from less regularised CNN 2017-07-26]]
+  - [[../figures/rocCurves/2017-07-27_18:04:00-3dCNN2chfakedata.png]]
 
 ** 2017-07-31 RESULTS
 
@@ -446,12 +446,12 @@
 
 - Avg AUC, spec, sens (over 5 k-folds): 0.762, 0.630, 0.735.
 
-   - [[../figures/rocCurves/2017-07-31_10:29:00-3dCNN2chfakedata.png][ROC curve from less regularised CNN 2017-07-28]]
+   - [[../figures/rocCurves/2017-07-31_10:29:00-3dCNN2chfakedata.png]]
 
 - Results for the models applied to real data (avg AUC, spec, sens):
   0.544, 0.814, 0.207.
 
-   - [[../figures/rocCurves/2017-07-31_13:26:00-3dCNN2chrealdata.png][ROC curve from application of CNN 2017-07-28 to real data]]
+   - [[../figures/rocCurves/2017-07-31_13:26:00-3dCNN2chrealdata.png]]
      
 ** 2017-08-01 CNN ARTEFACT VIS
 
@@ -477,7 +477,7 @@
   Maybe I need to change the learning rate or the number of epochs?
 - It might be helpful to write a GAN so that we can see what the CNN
   decides a heart cube looks like.
-- I have found this: [[https://arxiv.org/pdf/1512.03385v1.pdf][]]. When
+- I have found this: [[https://arxiv.org/pdf/1512.03385v1.pdf]]. When
   the latest CNN is done training I'll use a very deep cnn to see if we
   can do any better than 70% acc.
 
@@ -492,7 +492,7 @@
   don't know why. It is diagnosing the images correctly regardless of
   this.
 
-   - [[../figures/diagnoses/heatmapExample0.png][Heatmap diagnosis 2017-08-03 to real data]]
+   - [[../figures/diagnoses/heatmapExample0.png]]
 
 - I could try using the average of the k-folds to see where the
   diagnostic part is, instead of just one k-fold. I will need to do
@@ -543,7 +543,7 @@
 - Running the getDiagArea k-folding doesn't seem to show anything
   new... Why is the CNN looking at where it is?
 
-   - [[../figures/diagnoses/heatmapExample1.png][Heatmap example of all k-folds patient 20 in inData.npy]]
+   - [[../figures/diagnoses/heatmapExample1.png]]
 
 - It seems like the CNN is looking at the denser bits of the heatmap.
 - I could try training the CNN on the simulated data and then
@@ -555,12 +555,12 @@
 - Finetuning model with cnnFinetune.py
 - It works well!
 
-   - [[../figures/rocCurves/2017-08-07_14:13:00-finetunedCNNrealdata.png][Finetuned CNN ROC curve]]
-   - [[../figures/rocCurves/2017-08-07_14:41:00-finetunedCNNrealdata.png][Finetuned CNN ROC curve]]
+   - [[../figures/rocCurves/2017-08-07_14:13:00-finetunedCNNrealdata.png]]
+   - [[../figures/rocCurves/2017-08-07_14:41:00-finetunedCNNrealdata.png]]
 
 - Trying with learning rate = 0.00001, 50 epochs:
 
-   - [[../figures/rocCurves/2017-08-07_15:03:00-finetunedCNNrealdata.png][Finetuned CNN ROC curve]]
+   - [[../figures/rocCurves/2017-08-07_15:03:00-finetunedCNNrealdata.png]]
 
 - Getting better results with the fake data would probably correspond
   to better results in the finetuned CNN with real data.
@@ -587,11 +587,11 @@
   ~0.8.
 - ROC curve:
 
-   - [[../figures/rocCurves/2017-08-10_10:04:00-CNNh5.png][20000 data]]
+   - [[../figures/rocCurves/2017-08-10_10:04:00-CNNh5.png]]
 
 - The ROC curve for the real data is ok:
 
-   - [[../figures/rocCurves/2017-08-10_10:35:00-CNNh5-finetunedRealData.png][Finetuned data]]
+   - [[../figures/rocCurves/2017-08-10_10:35:00-CNNh5-finetunedRealData.png]]
 
 - There isn't a lot of carryover between the sets. It would be better
   to train the CNN from scratch on real data. It might also be better
@@ -610,7 +610,7 @@
   ill/10000 healthy). The ROC curve should begin at
   =[fpr,tpr] == [0,0]= but I forgot to manually add that index.
 
-   - [[../figures/rocCurves/2017-08-15_10:15:00-CNN-pairwise.png][20000 data pairwise CNNs]]
+   - [[../figures/rocCurves/2017-08-15_10:15:00-CNN-pairwise.png]]
 
 - I am going to run a CNN for categorising 10000 infarcted, ischaemic,
   mixed, artefact, and healthy hearts. I cannot use ROC curves for this
@@ -689,7 +689,7 @@
   0.37099999] Mixed: [ 0.47299998] Artefact: [ 0.51699997] Overall
   accuracy: [ 0.46379998] ROC AUC: [ 0.826947]
 
-   - [[../figures/rocCurves/2017-08-31_09:46:00-CNN-all.png][ROC for ill/healthy matchings]]
+   - [[../figures/rocCurves/2017-08-31_09:46:00-CNN-all.png]]
 
 ** 2018-05-02 SIM GEN CHANGES, FINETINED RESULTS
 
@@ -699,17 +699,17 @@
   infarction-healthy.h5 and infarction-healthy-test.h5).
 - Testing cnnH5.py on healthy/infarction sims: Specificity: 0.835
   Sensitivity: 0.859 ROC AUC: 0.923
-  [[../figures/rocCurves/2018-05-02_21:12:00-roc_curve.png][ROC infarction/healthy sims]]
+  [[../figures/rocCurves/2018-05-02_21:12:00-roc_curve.png]]
 - Wrote a new postproc so that we can easily get the ROC AUC, and other
   values out.
 - Rerunning on latest CNN...
 - Will finetune with real scans when done.
 - Finetuned results: @150 epochs: Specificity: 0.363 Sensitivity: 0.755
   ROC AUC: 0.651
-  [[../figures/rocCurves/2018-05-02_21:40:00-roc_curve.png][ROC at 150 epochs finetuned]]
+  [[../figures/rocCurves/2018-05-02_21:40:00-roc_curve.png]]
 
   @20 epochs: Specificity: 0.280 Sensitivity: 0.777 ROC AUC: 0.646
-  [[../figures/rocCurves/2018-05-02_21:48:00-roc_curve.png][ROC at 20 epochs finetuned]]
+  [[../figures/rocCurves/2018-05-02_21:48:00-roc_curve.png]]
 
 - This is exciting! We are finding transferability between real and
   simulated scan diagnosing. We just need to improve the sims with a 3D
@@ -717,7 +717,7 @@
 
 ** 2018-05-04 POLAR PLOT VIS
 - Polar plot is tentatively up:
-  [[../figures/diagnoses/polar_plot.png][polar plot example]]
+  [[../figures/diagnoses/polar_plot.png]]
 - Not *great* and I think we can do much better, but for now, we know it works.
 - Writing up a python visualisation module now.
 
@@ -728,7 +728,7 @@
 - Losscube needs a BIG rework... it barely works at all. Now that we have working 2d visualisations, we should
   try and get the losscube up and running again with the new vis-es.
 - We are getting something... Will play around with it more tomorrow.
-[[../figures/visualisations/1525726948.409029-cartesian.png][Visualisation of losscube.]]
+[[../figures/visualisations/1525726948.409029-cartesian.png]]
 
 ** 2018-05-08 ARTEFACT SITE VIS
 - Losscube overlay for visualisation is working well now:
@@ -838,10 +838,10 @@
 ** 2018-05-22 GAN ISSUES
 - Having trouble with getting GAN to learn. No change in loss over time.
 - output:
-[[../gan/figures/2018-05-22-mnist.png]]
+[[../figures/gan/2018-05-22-mnist.png]]
 - With batch normalisation no change in GAN after 28 epochs.
 - Will take a closer look at Stack-GAN and see where I am going wrong.
-[[../gan/figures/2018-05-22-mnist_2.png]]  
+[[../figures/gan/2018-05-22-mnist_2.png]]  
 - Maybe something is happening (see above). 
 - After 130 epochs no change..
 - Is a complicated GAN needed? A simple FC-NN may be good enough...
@@ -877,7 +877,7 @@
   
 ** 2018-05-29 BEGAN NOT WORKING
 - BEGAN trained to 300 epochs:
-[[../gan/figures/300_epochs.png]]
+[[../figures/gan/300_epochs.png]]
 - Doesn't seem to be converging onto a value...
   - Tried lam=0.0001, lam=0.1, lam=0.001, no convergence.
 - Problem with input data??
