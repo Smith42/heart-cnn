@@ -17,9 +17,10 @@ import h5py
 import time
 
 class Aug_Generator(keras.utils.Sequence):
-    def __init__(self, cubes, labels, indices, batch_size=100, shuffle=False):
+    def __init__(self, cubes, labels, indices, split=1, batch_size=100, seq=True, shuffle=False):
         """ Initialization """
         self.batch_size = batch_size
+        self.seq = seq
         self.labels = labels
         self.cubes = cubes
         self.indices = indices
@@ -28,12 +29,15 @@ class Aug_Generator(keras.utils.Sequence):
 
     def __len__(self):
         """ Denotes the number of batches per epoch """
-        return int(np.floor(len(self.indices) / self.batch_size))
+        return int(np.floor(len(self.indices) / (self.batch_size)))
 
     def __getitem__(self, index):
         """ Generate one batch of data """
         # Generate indexes of the batch
-        current_indices = list(np.sort(self.indices[index*self.batch_size:(index+1)*self.batch_size]))
+        if self.seq:
+             current_indices = list(np.sort(self.indices[index*self.batch_size:(index+1)*self.batch_size]))
+        else:
+             current_indices = list(np.sort(np.random.choice(self.indices, self.batch_size)))
 
         # Get np array from HDF5 file
         X = self.cubes[current_indices]
@@ -138,9 +142,9 @@ if __name__ == "__main__":
         # Horovod: using `lr = 1.0 * hvd.size()` from the very beginning leads to worse final
         # accuracy. Scale the learning rate `lr = 1.0` ---> `lr = 1.0 * hvd.size()` during
         # the first five epochs. See https://arxiv.org/abs/1706.02677 for details.
-        #cb.append(hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=5, verbose=1))
+        cb.append(hvd.callbacks.LearningRateWarmupCallback(warmup_epochs=8, verbose=1))
     # Reduce the learning rate if training plateaues.
-    cb.append(keras.callbacks.ReduceLROnPlateau(patience=3, verbose=1))
+    cb.append(keras.callbacks.ReduceLROnPlateau(patience=5, verbose=1))
     dt =str(int(time.time()))
 
     # set up logdir
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     # Train the model, leaving out the kfold not being used
     train_ind, test_ind = train_test_split(ro_folds_i, test_size=0.1, shuffle=False)
     batch_size = args.batch_size
-    epochs = 6
+    epochs = 12 // hvd.size() if args.dist else 12
     n_test_batches = len(test_ind) // batch_size
     n_train_batches = len(train_ind) // batch_size
     model.fit_generator(Aug_Generator(inData, inLabelsOH, train_ind, batch_size=batch_size), steps_per_epoch=n_train_batches, validation_data=Aug_Generator(inData, inLabelsOH, test_ind, batch_size=batch_size), validation_steps=n_test_batches, verbose=2, callbacks=cb, epochs=epochs)
