@@ -2,9 +2,9 @@
 #+OPTIONS: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
 #+OPTIONS: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
 #+OPTIONS: tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
-#+TITLE: labbook_heart-cnn
-#+DATE: <2018-05-02 Wed>
-#+AUTHOR: mike
+#+TITLE: labbook for heart-cnn
+#+DATE: <2018-07-12 Thu> 
+#+AUTHOR: mike smith
 #+LANGUAGE: en
 #+SELECT_TAGS: export
 #+EXCLUDE_TAGS: noexport
@@ -79,7 +79,7 @@
   - Avg Spec: 0.583, 0.623, 0.663 
   - Avg Sens: 0.633, 0.683, 0.700 
   - ROC curves:
-[[..igures/rocCurves/2017-07-05_16:31:00-2dsliceCNN.png]]
+[[../figures/rocCurves/2017-07-05_16:31:00-2dsliceCNN.png]]
 [[../figures/rocCurves/2017-07-06_09:55:00-2dsliceCNN.png]]
 [[../figures/rocCurves/2017-07-06_10:20:00-2dsliceCNN.png]]
 
@@ -778,7 +778,7 @@
 - We still get the same error with the MNIST and the CAM mapping. There must be a bug
   in the code that I am missing...
 - Occlusion mapping works well.. And a map of 1 works best. I should try this on the real data.
-[[../figures/visualisations/occlusion_map.png]]
+[[../figures/visualisations/1526499711-cartesian.png]]
 - It works on the real data!! (I think).
 - Testing the CAM on MNIST...
   
