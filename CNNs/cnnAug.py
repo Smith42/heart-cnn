@@ -75,6 +75,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Run k-folded CNN on augmented data.")
     parser.add_argument(type=int, dest="i", help="Current testing k-fold.")
     parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5).")
+    parser.add_argument("-e", "--n-epochs", nargs="?", type=int, const=10, default=10, dest="epochs", help="Total number of epochs (default 10).")
     parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
     parser.add_argument("-b", "--batch_size", nargs="?", type=int, const=248, default=248, dest="batch_size", help="Batch size (small batch sizes throttle speed due to slow h5py data loading).")
     parser.add_argument("-d", "--dist", nargs="?", type=int, const=0, default=0, dest="dist", help="Distributed TensorFlow via Horovod (1 if True, default 0).")
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     # Train the model, leaving out the kfold not being used
     train_ind, test_ind = train_test_split(ro_folds_i, test_size=0.1, shuffle=False)
     batch_size = args.batch_size
-    epochs = 12 // hvd.size() if args.dist else 12
+    epochs = args.epochs // hvd.size() if args.dist else args.epochs
     n_test_batches = len(test_ind) // batch_size
     n_train_batches = len(train_ind) // batch_size
     model.fit_generator(Aug_Generator(inData, inLabelsOH, train_ind, batch_size=batch_size), steps_per_epoch=n_train_batches, validation_data=Aug_Generator(inData, inLabelsOH, test_ind, batch_size=batch_size), validation_steps=n_test_batches, verbose=2, callbacks=cb, epochs=epochs)
