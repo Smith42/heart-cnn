@@ -1,7 +1,28 @@
 #!/bin/bash
-SEED=$RANDOM
 
-for i in {0..4}
+LOGDIR=./logs/$(date +%s)
+mkdir $LOGDIR
+echo Log directory $LOGDIR
+
+for j in {0..$1} # How many seeds?
 do
-    CUDA_VISIBLE_DEVICES=$i python ./CNNs/cnnAug.py $i -s $SEED -e 8 >./temp/$SEED-$i.log 2>&1 &
+    SEED=$RANDOM
+    echo Seed is $SEED
+
+    if [ $2 = 1 ] # Turn on k-folding
+    then
+        for i in {0..4} # Number of k-folds
+        do
+            CUDA_VISIBLE_DEVICES=$i python ./CNNs/cnnAug.py $i -S $SEED -l $LOGDIR -e 8 >$LOGDIR/$SEED-$i.log 2>&1 &
+        done
+        wait
+
+    else
+        for i in {0..5} # Number of available GPUs
+        do
+            SEED=$RANDOM
+            CUDA_VISIBLE_DEVICES=$i python ./CNNs/cnnAug.py -S $SEED -e 8 -l $LOGDIR >$LOGDIR/$SEED.log 2>&1 &
+        done
+        wait
+    fi
 done

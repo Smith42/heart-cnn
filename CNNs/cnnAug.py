@@ -50,6 +50,12 @@ class Aug_Generator(keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.indices)
 
+def dir_path(string):
+    if os.path.isdir(string):
+        return string
+    else:
+        exit(string+" is not a directory.")
+
 def gen_folds(num_ars, i, k):
     """ Generate fold pointer arrays given number of total data cubes """
     k_arr = np.arange(k)
@@ -81,9 +87,11 @@ if __name__ == "__main__":
     parser.add_argument("-S", "--SEED", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
     parser.add_argument("-b", "--batch_size", nargs="?", type=int, const=248, default=248, dest="batch_size", help="Batch size (small batch sizes throttle speed due to slow h5py data loading).")
     parser.add_argument("-d", "--dist", nargs="?", type=int, const=0, default=0, dest="dist", help="Distributed TensorFlow via Horovod (1 if True, default 0).")
+    parser.add_argument("-l", "--logdir", nargs="?", default="./logs", dest="logdir", help="Logdir")
 
     # Initialise data
     args = parser.parse_args()
+    dir_path(args.logdir)
     np.random.seed(args.SEED)
     h5f_aug = h5py.File("./data/aug_data.h5", "r")
     h5f_real = h5py.File("./data/real_data.h5", "r")
@@ -152,11 +160,12 @@ if __name__ == "__main__":
     dt =str(int(time.time()))
 
     # set up logdir
-    filestr = str("k-equals-"+str(args.i))
-    logdir = "./logs/s"+str(args.SEED)+"/"
+    filestr = str("s"+str(args.SEED)+"-k-equals-"+str(args.i))
+    logdir = args.logdir+"/"
+    #logdir = "./logs/s"+str(args.SEED)+"/"
     if not args.dist or hvd.rank() == 0:
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
+        # if not os.path.exists(logdir):
+        #     os.makedirs(logdir)
         cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=6))
         cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
 
