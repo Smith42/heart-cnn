@@ -72,11 +72,13 @@ def gen_folds(num_ars, i, k):
 
 if __name__ == "__main__":
     # Argument parsing
-    parser = argparse.ArgumentParser("Run k-folded CNN on augmented data.")
-    parser.add_argument(type=int, dest="i", help="Current testing k-fold.")
-    parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5).")
+    parser = argparse.ArgumentParser("Run k-folded cross validation (or random selection validation if i is not defined) CNN on augmented data.")
+    # k-folding args
+    parser.add_argument(type=int, dest="i", nargs="?", default=None, help="Current testing k-fold. Do not pass if random selection is wanted.")
+    parser.add_argument("-k", "--n-k-folds", nargs="?", type=int, const=5, default=5, dest="k", help="Total number of folds (default 5). If random selection is selected, then ratio between train/test sets.")
+    # Other args
     parser.add_argument("-e", "--n-epochs", nargs="?", type=int, const=10, default=10, dest="epochs", help="Total number of epochs (default 10).")
-    parser.add_argument("-s", "--seed", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
+    parser.add_argument("-S", "--SEED", nargs="?", type=int, const=1729, default=1729, dest="SEED", help="Numpy random seed (default 1729).")
     parser.add_argument("-b", "--batch_size", nargs="?", type=int, const=248, default=248, dest="batch_size", help="Batch size (small batch sizes throttle speed due to slow h5py data loading).")
     parser.add_argument("-d", "--dist", nargs="?", type=int, const=0, default=0, dest="dist", help="Distributed TensorFlow via Horovod (1 if True, default 0).")
 
@@ -86,7 +88,8 @@ if __name__ == "__main__":
     h5f_aug = h5py.File("./data/aug_data.h5", "r")
     h5f_real = h5py.File("./data/real_data.h5", "r")
 
-    # Get folding
+    if args.i == None:
+        args.i = np.random.randint(args.k)
     num_ars = h5f_real["in_labels"].shape[0]
     current_fold, ro_folds = gen_folds(num_ars, args.i, args.k)
 
