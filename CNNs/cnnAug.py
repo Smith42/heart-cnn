@@ -166,7 +166,7 @@ if __name__ == "__main__":
     if not args.dist or hvd.rank() == 0:
         # if not os.path.exists(logdir):
         #     os.makedirs(logdir)
-        cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=6))
+        cb.append(keras.callbacks.ModelCheckpoint(filepath=logdir+filestr+".h5", verbose=1, save_best_only=False, period=args.epochs))
         cb.append(keras.callbacks.CSVLogger(logdir+filestr+".csv"))
 
     # Train the model, leaving out the kfold not being used
@@ -186,7 +186,7 @@ if __name__ == "__main__":
         inData_test = np.concatenate((healthTest, illTest))
         inLabels_test = np.concatenate((healthLabel, illLabel))[:,1]
 
-    # Get roc curve data
+        # Get roc curve data
         predicted = model.predict(inData_test, verbose=0, batch_size=1)
 
         fpr, tpr, th = roc_curve(inLabels_test, predicted[:,1])
