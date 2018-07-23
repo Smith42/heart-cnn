@@ -47,7 +47,7 @@ def augment(h_arr):
     print("After g blur: "+str(h_arr.shape))
     h_arr = np.concatenate((h_arr, rotate(h_arr))) # 4*16n = 64n
     print("After rotation: "+str(h_arr.shape))
-    h_arr = np.concatenate((h_arr, translate(h_arr))) # 17*64n = 1088n
+    h_arr = np.concatenate((h_arr, translate(h_arr))) # 16*64n = 1024n
     print("After translation: "+str(h_arr.shape))
     return h_arr
 
@@ -63,6 +63,13 @@ if __name__ == "__main__":
         aug_arr = np.append(aug_arr, np.expand_dims(augment(heart), axis=0), axis=0)
         print("Total array shape: "+str(aug_arr.shape)+"\n")
 
+    aug_indices = np.repeat(np.arange(examples.shape[0]), aug_arr.shape[1])
+    labelsOH = np.repeat(labelsOH, aug_arr.shape[1], axis=0)
+    aug_arr = np.reshape(aug_arr, [-1,aug_arr.shape[2],aug_arr.shape[3],aug_arr.shape[4],aug_arr.shape[5]])
+    print("Total array shape:"+str(aug_arr.shape)+"\n")
+    print("Total label shape:"+str(labelsOH.shape)+"\n")
+
     with h5py.File("./data/aug_data.h5") as hf:
         hf.create_dataset("in_data", data=aug_arr)
         hf.create_dataset("in_labels", data=labelsOH)
+        hf.create_dataset("indices", data=aug_indices)
